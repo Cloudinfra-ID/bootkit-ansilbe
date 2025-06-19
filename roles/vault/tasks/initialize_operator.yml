@@ -1,0 +1,51 @@
+---
+- name: Wait for Vault service to start
+  ansible.builtin.wait_for:
+    port: 8200
+    timeout: 60
+
+- name: Check if Vault is initialized
+  shell: vault status -format=json | jq -r '.initialized'
+  register: vault_status
+  changed_when: false
+  #ignore_errors: yes
+  environment:
+    VAULT_ADDR: "{{ vault_api_addr }}"
+
+- name: Set vault_initialized_check fact
+  set_fact:
+    vault_initialized_check: "{{ vault_status.stdout == 'true' }}"
+
+- name: Initialize Vault in Master node
+  command: >
+    vault operator init
+    -key-shares=5
+    -key-threshold=3
+    -format=json
+  when:
+    - not vault_initialized_check
+    - (vault_cluster_enabled and inventory_hostname == groups['vault'][0]) or (not vault_cluster_enabled)
+  register: init_master_result
+  environment:
+    VAULT_ADDR: "{{ vault_api_addr }}"
+
+- name: Extract root token in Master node
+  set_fact:
+    vault_root_token: "{{ (init_master_result.stdout | from_json).root_token }}"
+  when: init_master_result is changed
+
+- name: Save root token in Master node
+  ansible.builtin.copy:
+    content: "{{ vault_root_token }}"
+    dest: "{{ vault_config_dir }}/root_token.txt"
+    mode: '0600'
+  when:
+    - inventory_hostname == groups['vault'][0]
+    - vault_root_token is defined
+
+- name: Save unseal keys in Master node
+  ansible.builtin.copy:
+    content: "{{ init_master_result.stdout }}"
+    dest: "{{ vault_config_dir }}/unseal.json"
+    mode: 0600
+  when: init_master_result is changed

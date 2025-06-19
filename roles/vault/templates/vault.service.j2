@@ -1,0 +1,16 @@
+[Unit]
+Description=HashiCorp Vault
+Documentation=https://www.vaultproject.io/docs/
+After=network.target
+
+[Service]
+Environment=VAULT_ADDR={{ 'https' if vault_tls_enabled | default(false) else 'http' }}://{{ ansible_host }}:{{ vault_api_port }}
+User={{ vault_user }}
+Group={{ vault_group }}
+ExecStart={{ vault_install_dir }}/vault server -config={{ vault_config_file }}
+ExecReload=/bin/kill -HUP $MAINPID
+LimitNOFILE=65536
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

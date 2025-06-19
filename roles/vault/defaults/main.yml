@@ -1,0 +1,44 @@
+# Hashicorp Vault
+vault_version: "1.19.5"
+vault_arch: "amd64"
+
+# Directories
+vault_install_dir: "/usr/local/bin"
+vault_config_dir: "/etc/vault.d"
+vault_config_ssl_dir: "/etc/vault.d/ssl"
+vault_data_dir: "/opt/vault/data"
+
+# Config file
+vault_cluster_name: "vault-cluster"
+vault_config_file: "/etc/vault.d/vault.hcl"
+vault_auto_init_operator: true
+
+# User and group
+vault_user: "vault"
+vault_group: "vault"
+
+# Vault operation mode
+vault_cluster_enabled: true
+vault_backend: "raft"  # options: raft, consul, s3, etc.
+
+# HTTP and API configuration
+vault_api_port: 8200
+vault_cluster_port: 8201
+vault_tls_enabled: true
+#vault_url_scheme: "https" # use Jinja templating instead static
+vault_api_addr: ""         # automatically set on configure task
+vault_cluster_addr: ""     # automatically set on configure task
+vault_ui: true
+
+# TLS configuration
+vault_tls_ca_file: "/etc/vault.d/ssl/vault.crt"
+vault_tls_cert_file: "/etc/vault.d/ssl/vault.crt"
+vault_tls_key_file: "/etc/vault.d/ssl/vault.key"
+
+# Log configuration
+vault_log_level: "info"
+vault_log_format: "json"
+
+# Raft configuration (only for cluster mode)
+vault_raft_node_id: "{{ inventory_hostname }}"
+#vault_raft_peers: [] # use inventory hosts instead

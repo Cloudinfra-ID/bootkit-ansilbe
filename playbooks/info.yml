@@ -1,0 +1,20 @@
+---
+- name: Get hosts information
+  hosts: all
+  gather_facts: no
+
+  tasks:
+    - name: Ping the host
+      ansible.builtin.ping:
+
+    - name: Print the hostname
+      ansible.builtin.command: hostname
+      register: hostname_output
+
+    - name: Show hostname
+      ansible.builtin.debug:
+        msg: "Inventory Host {{ inventory_hostname }} has hostname on VM: {{ hostname_output.stdout }}"
+
+    - name: Print inventory IP
+      debug:
+        msg: "Inventory IP of {{ inventory_hostname }} is {{ ansible_host }}"

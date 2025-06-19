@@ -1,0 +1,6 @@
+---
+- hosts: vault
+  become: yes
+  #vars:
+  roles:
+    - role: ../roles/vault

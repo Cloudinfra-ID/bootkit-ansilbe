@@ -1,0 +1,47 @@
+- name: Unseal Vault with unseal JSON file in Master node
+  shell: |
+    for key in $(jq -r '.unseal_keys_b64[]' "{{ vault_config_dir }}/unseal.json"); do
+      vault operator unseal "$key" || true
+    done
+  environment:
+    VAULT_ADDR: "{{ vault_api_addr }}"
+  args:
+    executable: /bin/bash
+  register: unseal_master_result
+  when:
+    - inventory_hostname == groups['vault'][0]
+
+- name: Fetch unseal JSON file from Master node
+  fetch:
+    src: "{{ vault_config_dir }}/unseal.json"
+    dest: /tmp/unseal.json
+    flat: true
+  when:
+    - inventory_hostname == groups['vault'][0]
+
+- name: Copy unseal JSON file to Slave nodes
+  copy:
+    src: /tmp/unseal.json
+    dest: "{{ vault_config_dir }}/unseal.json"
+  register: copy_unseal_result
+  when:
+    - inventory_hostname != groups['vault'][0]
+
+- name: Unseal Vault with unseal JSON file in Slave nodes
+  shell: |
+    for key in $(jq -r '.unseal_keys_b64[]' "{{ vault_config_dir }}/unseal.json"); do
+      vault operator unseal "$key" || true
+    done
+  environment:
+    VAULT_ADDR: "{{ vault_api_addr }}"
+  args:
+    executable: /bin/bash
+  register: unseal_slave_result
+  when:
+    - copy_unseal_result is changed
+
+- name: Remove unseal JSON file in Slave nodes
+  ansible.builtin.file:
+    path: "{{ vault_config_dir }}/unseal.json"
+    state: absent
+  when: unseal_slave_result is changed

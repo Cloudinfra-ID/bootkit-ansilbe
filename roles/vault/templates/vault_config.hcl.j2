@@ -1,0 +1,33 @@
+ui               = {{ vault_ui | default(true) | lower }}
+disable_mlock    = true
+
+cluster_name     = "{{ vault_cluster_name }}"
+
+log_level        = "info"
+log_format       = "json"
+
+storage "raft" {
+  path    = "{{ vault_data_dir }}"
+  node_id = "{{ inventory_hostname }}"
+
+{% for peer in groups['vault'] %}
+  retry_join {
+    leader_api_addr     = "{{ 'https' if vault_tls_enabled | default(false) else 'http' }}://{{ hostvars[peer]['ansible_host'] }}:{{ vault_api_port }}"
+    leader_ca_cert_file = "{{ vault_tls_ca_file }}"
+  }
+{% endfor %}
+}
+
+listener "tcp" {
+  address         = "0.0.0.0:{{ vault_api_port }}"
+  cluster_address = "{{ ansible_host }}:{{ vault_cluster_port }}"
+
+  tls_disable     = {{ 'false' if vault_tls_enabled | default(false) else 'true' }}
+{% if vault_tls_enabled | default(false) %}
+  tls_cert_file   = "{{ vault_tls_cert_file }}"
+  tls_key_file    = "{{ vault_tls_key_file }}"
+{% endif %}
+}
+
+api_addr     = "{{ 'https' if vault_tls_enabled | default(false) else 'http' }}://{{ ansible_host }}:{{ vault_api_port }}"
+cluster_addr = "{{ 'https' if vault_tls_enabled | default(false) else 'http' }}://{{ ansible_host }}:{{ vault_cluster_port }}"

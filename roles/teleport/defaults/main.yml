@@ -1,4 +1,32 @@
 # Teleport
-teleport_channel: "stable"
-teleport_version: "v17"
-teleport_distribution: "ubuntu"
+teleport_version: "v17.5.2"
+teleport_architecture: "amd64"
+
+# Teleport node settings
+teleport_nodename: "{{ inventory_hostname }}"
+teleport_advertise_ip: "{{ ansible_host }}"
+
+# Teleport domain name
+teleport_domain_name: ""
+
+# Teleport user and group
+teleport_user: "teleport"
+teleport_group: "teleport"
+
+# Directories
+teleport_install_dir: "/usr/local/bin"
+teleport_config_dir: "/etc/teleport"
+teleport_data_dir: "/var/lib/teleport"
+teleport_log_dir: "/var/log/teleport"
+
+# Teleport configuration file
+teleport_config_file: "/etc/teleport/teleport.yaml"
+
+# Teleport log settings
+teleport_log_level: "INFO"  # Options: DEBUG, INFO, WARN, ERROR, FATAL
+teleport_log_file: "/var/log/teleport/teleport.log"
+teleport_log_format: "json"
+
+# Teleport cluster settings
+teleport_cluster_name: "teleport-cluster"
+teleport_cluster_enabled: true

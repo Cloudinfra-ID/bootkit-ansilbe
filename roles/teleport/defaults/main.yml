@@ -1,0 +1,4 @@
+# Teleport
+teleport_channel: "stable"
+teleport_version: "v17"
+teleport_distribution: "ubuntu"

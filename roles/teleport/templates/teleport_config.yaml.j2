@@ -1,0 +1,29 @@
+version: v3
+teleport:
+  nodename: {{ teleport_nodename }}
+  data_dir: {{ teleport_data_dir }}
+  log:
+    output: {{ teleport_log_file }}
+    severity: {{ teleport_log_level }}
+    format:
+      output: {{ teleport_log_format }}
+  storage:
+    type: dir
+    path: {{ teleport_data_dir }}
+  auth_token: ""
+  connection_limits:
+    max_connections: 1000
+    max_users: 250
+  advertise_ip: {{ teleport_advertise_ip }}
+auth_service:
+  enabled: "yes"
+  cluster_name: {{ teleport_cluster_name }}
+  listen_addr: 0.0.0.0:3025
+  proxy_listener_mode: multiplex
+ssh_service:
+  enabled: "yes"
+proxy_service:
+  enabled: "yes"
+  https_keypairs: []
+  https_keypairs_reload_interval: 0s
+  acme: {}

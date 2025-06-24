@@ -1,0 +1,6 @@
+---
+- hosts: teleport
+  become: yes
+  #vars:
+  roles:
+    - role: ../roles/teleport

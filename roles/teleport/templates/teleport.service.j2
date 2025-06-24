@@ -1,0 +1,15 @@
+[Unit]
+Description=Teleport Service
+After=network.target
+
+[Service]
+User={{ teleport_user }}
+Group={{ teleport_group }}
+ExecStart={{ teleport_install_dir }}/teleport start --config={{ teleport_config_file }}
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

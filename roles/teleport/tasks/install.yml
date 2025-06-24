@@ -1,14 +1,50 @@
 ---
-- name: Download Teleport GPG key
+- name: Download Teleport binary
   ansible.builtin.get_url:
-    url: https://deb.releases.teleport.dev/teleport-pubkey.asc
-    dest: /usr/share/keyrings/teleport-archive-keyring.gpg
-    mode: '0644'
-  when: ansible_os_family == 'Debian'
+    url: "https://cdn.teleport.dev/teleport-{{ teleport_version }}-linux-{{ teleport_architecture }}-bin.tar.gz"
+    dest: "/tmp/teleport.tar.gz"
+    checksum: "sha256:https://cdn.teleport.dev/teleport-{{ teleport_version }}-linux-{{ teleport_architecture }}-bin.tar.gz.sha256"
 
-- name: Add Teleport APT repository
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/teleport-archive-keyring.gpg] https://apt.releases.teleport.dev/{{ teleport_distribution }} {{ teleport_version }} {{ teleport_channel }}/{{ teleport_version }}"
+- name: Ensure Teleport temporary directory exists
+  ansible.builtin.file:
+    path: /tmp/teleport
+    state: directory
+    mode: '0755'
+
+- name: Unarchive Teleport binary
+  ansible.builtin.unarchive:
+    src: "/tmp/teleport.tar.gz"
+    dest: "/tmp/teleport"
+    remote_src: yes
+    mode: '0755'
+
+- name: Install Teleport binary
+  ansible.builtin.shell: ./install 
+  args:
+    chdir: /tmp/teleport/teleport
+
+- name: Create Teleport group
+  ansible.builtin.group:
+    name: "{{ teleport_group }}"
     state: present
-    filename: teleport
-  when: ansible_os_family == 'Debian'
+    system: yes
+
+- name: Create Teleport user
+  ansible.builtin.user:
+    name: "{{ teleport_user }}"
+    group: "{{ teleport_group }}"
+    system: yes
+    shell: /sbin/nologin
+    create_home: no
+
+- name: Create Teleport directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ teleport_user }}"
+    group: "{{ teleport_group }}"
+    mode: '0750'
+  loop: 
+    - "{{ teleport_config_dir }}"
+    - "{{ teleport_data_dir }}"
+    - "{{ teleport_log_dir }}"

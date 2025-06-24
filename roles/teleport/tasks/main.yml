@@ -2,3 +2,7 @@
 - name: Install Teleport
   ansible.builtin.include_tasks:
     file: 'install.yml'
+
+- name: Configure Teleport
+  ansible.builtin.include_tasks:
+    file: 'configure.yml'

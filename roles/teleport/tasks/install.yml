@@ -1,0 +1,14 @@
+---
+- name: Download Teleport GPG key
+  ansible.builtin.get_url:
+    url: https://deb.releases.teleport.dev/teleport-pubkey.asc
+    dest: /usr/share/keyrings/teleport-archive-keyring.gpg
+    mode: '0644'
+  when: ansible_os_family == 'Debian'
+
+- name: Add Teleport APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/teleport-archive-keyring.gpg] https://apt.releases.teleport.dev/{{ teleport_distribution }} {{ teleport_version }} {{ teleport_channel }}/{{ teleport_version }}"
+    state: present
+    filename: teleport
+  when: ansible_os_family == 'Debian'

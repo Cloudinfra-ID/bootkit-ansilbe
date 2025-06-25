@@ -48,3 +48,4 @@
     - "{{ teleport_config_dir }}"
     - "{{ teleport_data_dir }}"
     - "{{ teleport_log_dir }}"
+    - "{{ teleport_ssl_dir }}"

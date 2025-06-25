@@ -1,4 +1,5 @@
 version: v3
+
 teleport:
   nodename: {{ teleport_nodename }}
   data_dir: {{ teleport_data_dir }}
@@ -11,19 +12,30 @@ teleport:
     type: dir
     path: {{ teleport_data_dir }}
   auth_token: ""
+  join_params:
+    token_name: ""
+    method: token
   connection_limits:
     max_connections: 1000
     max_users: 250
   advertise_ip: {{ teleport_advertise_ip }}
+
 auth_service:
   enabled: "yes"
   cluster_name: {{ teleport_cluster_name }}
   listen_addr: 0.0.0.0:3025
   proxy_listener_mode: multiplex
+
 ssh_service:
   enabled: "yes"
+
 proxy_service:
   enabled: "yes"
-  https_keypairs: []
-  https_keypairs_reload_interval: 0s
-  acme: {}
+  public_addr: {{ teleport_proxy_public_domain }}:{{ teleport_proxy_public_port }}
+  https_keypairs:
+    - cert_file: {{ teleport_proxy_https_cert_file }}
+      key_file: {{ teleport_proxy_https_key_file }}
+  https_keypairs_reload_interval: 1h0m0s
+  web_listen_addr: 0.0.0.0:{{ teleport_proxy_web_listen_port }}
+  acme:
+    enabled: false

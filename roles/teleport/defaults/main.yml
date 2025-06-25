@@ -6,8 +6,12 @@ teleport_architecture: "amd64"
 teleport_nodename: "{{ inventory_hostname }}"
 teleport_advertise_ip: "{{ ansible_host }}"
 
-# Teleport domain name
-teleport_domain_name: ""
+# Teleport proxy settings
+teleport_proxy_public_domain: ""
+teleport_proxy_public_port: 443
+teleport_proxy_https_cert_file: "/etc/teleport/ssl/fullchain.pem"
+teleport_proxy_https_key_file: "/etc/teleport/ssl/privkey.pem"
+teleport_proxy_web_listen_port: 443
 
 # Teleport user and group
 teleport_user: "teleport"
@@ -18,6 +22,7 @@ teleport_install_dir: "/usr/local/bin"
 teleport_config_dir: "/etc/teleport"
 teleport_data_dir: "/var/lib/teleport"
 teleport_log_dir: "/var/log/teleport"
+teleport_ssl_dir: "/etc/teleport/ssl"
 
 # Teleport configuration file
 teleport_config_file: "/etc/teleport/teleport.yaml"

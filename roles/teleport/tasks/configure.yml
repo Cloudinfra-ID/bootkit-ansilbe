@@ -1,5 +1,5 @@
 ---
-- name: Copy SSL certificate for Teleport
+- name: Copy Teleport SSL certificate
   ansible.builtin.copy:
     src: "teleport.crt"
     dest: "{{ teleport_proxy_https_cert_file }}"
@@ -7,7 +7,7 @@
     group: "{{ teleport_group }}"
     mode: 0640
 
-- name: Copy SSL key for Teleport
+- name: Copy Teleport SSL key
   ansible.builtin.copy:
     src: "teleport.key"
     dest: "{{ teleport_proxy_https_key_file }}"

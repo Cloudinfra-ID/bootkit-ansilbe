@@ -9,8 +9,8 @@ teleport_advertise_ip: "{{ ansible_host }}"
 # Teleport proxy settings
 teleport_proxy_public_domain: ""
 teleport_proxy_public_port: 443
-teleport_proxy_https_cert_file: "/etc/teleport/ssl/fullchain.pem"
-teleport_proxy_https_key_file: "/etc/teleport/ssl/privkey.pem"
+teleport_proxy_https_cert_file: "/etc/teleport/ssl/teleport.crt"
+teleport_proxy_https_key_file: "/etc/teleport/ssl/teleport.key"
 teleport_proxy_web_listen_port: 443
 
 # Teleport user and group
@@ -35,3 +35,4 @@ teleport_log_format: "json"
 # Teleport cluster settings
 teleport_cluster_name: "teleport-cluster"
 teleport_cluster_enabled: true
+teleport_auth_token: "your-auth-token"  # Replace with your actual auth token

@@ -31,7 +31,7 @@ vault_cluster_addr: ""     # automatically set on configure task
 vault_ui: true
 
 # TLS configuration
-vault_tls_ca_file: "/etc/vault.d/ssl/vault.crt"
+vault_tls_ca_file: "/usr/local/share/ca-certificates/vault-ca.crt"
 vault_tls_cert_file: "/etc/vault.d/ssl/vault.crt"
 vault_tls_key_file: "/etc/vault.d/ssl/vault.key"
 

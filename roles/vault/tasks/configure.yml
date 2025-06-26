@@ -28,7 +28,7 @@
 - name: Copy Vault CA certificate to trusted CA
   ansible.builtin.copy:
     src: "vault-ca.crt"
-    dest: "/usr/local/share/ca-certificates/vault-ca.crt"
+    dest: "{{ vault_tls_ca_file }}"
     owner: root
     group: root
     mode: '0644'

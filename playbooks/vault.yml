@@ -2,5 +2,14 @@
 - hosts: vault
   become: yes
   #vars:
+  vars_prompt:
+    - name: vault_version
+      prompt: "Enter the Vault version"
+      private: no
+      default: "1.19.5"
+    - name: vault_cluster_name
+      prompt: "Enter the Vault cluster name"
+      private: no
+      default: "vault-cluster"
   roles:
     - role: ../roles/vault

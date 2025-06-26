@@ -7,7 +7,7 @@
     group: "{{ vault_group }}"
     mode: 0640
 
-- name: Copy OpenSSL Self-signed certificate
+- name: Copy Vault SSL certificate
   ansible.builtin.copy:
     src: "vault.crt"
     dest: "{{ vault_tls_cert_file }}"
@@ -16,7 +16,7 @@
     mode: 0640
   when: vault_tls_enabled | bool
 
-- name: Copy OpenSSL Self-signed key
+- name: Copy Vault SSL key
   ansible.builtin.copy:
     src: "vault.key"
     dest: "{{ vault_tls_key_file }}"
@@ -25,16 +25,16 @@
     mode: 0640
   when: vault_tls_enabled | bool
 
-- name: Copy CA certificate to trusted CA
+- name: Copy Vault CA certificate to trusted CA
   ansible.builtin.copy:
-    src: "vault.crt"
-    dest: "/usr/local/share/ca-certificates/vault.crt"
+    src: "vault-ca.crt"
+    dest: "/usr/local/share/ca-certificates/vault-ca.crt"
     owner: root
     group: root
     mode: '0644'
   when: vault_tls_enabled | bool
 
-- name: Update trusted CA certificates
+- name: Update Vault trusted CA certificates
   ansible.builtin.command: update-ca-certificates
   register: update_ca_output
   changed_when: "'added new certificate' in update_ca_output.stdout"

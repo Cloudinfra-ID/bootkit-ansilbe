@@ -11,13 +11,14 @@ teleport:
   storage:
     type: dir
     path: {{ teleport_data_dir }}
-  auth_token: ""
-  join_params:
-    token_name: ""
-    method: token
+  auth_token: "{{ teleport_auth_token }}"
+  # disable join_params if you want to use the default token
+  #join_params:
+  #  token_name: ""
+  #  method: token
   connection_limits:
     max_connections: 1000
-    max_users: 250
+    max_users: 100
   advertise_ip: {{ teleport_advertise_ip }}
 
 auth_service:
@@ -25,6 +26,10 @@ auth_service:
   cluster_name: {{ teleport_cluster_name }}
   listen_addr: 0.0.0.0:3025
   proxy_listener_mode: multiplex
+  #authentication:
+  #  type: github
+  #  second_factor: webauthn
+  session_recording: node
 
 ssh_service:
   enabled: "yes"

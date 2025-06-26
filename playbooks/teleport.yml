@@ -2,5 +2,22 @@
 - hosts: teleport
   become: yes
   #vars:
+  vars_prompt:
+    - name: teleport_version
+      prompt: "Enter the Teleport version"
+      private: no
+      default: "v17.5.2"
+    - name: teleport_cluster_name
+      prompt: "Enter the Teleport cluster name"
+      private: no
+      default: "teleport-cluster"
+    - name: teleport_proxy_public_domain
+      prompt: "Enter the Teleport Proxy Public Domain"
+      private: no  # show input; use `yes` for secrets like passwords
+      default: ""
+    - name: teleport_auth_token
+      prompt: "Enter the Teleport auth token"
+      private: yes # show input; use `yes` for secrets like passwords
+      default: ""
   roles:
     - role: ../roles/teleport

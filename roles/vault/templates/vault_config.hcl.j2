@@ -1,10 +1,13 @@
 ui               = {{ vault_ui | default(true) | lower }}
-disable_mlock    = true
+disable_mlock    = {{ vault_disable_mlock | default(false) | lower }}
 
 cluster_name     = "{{ vault_cluster_name }}"
 
-log_level        = "info"
-log_format       = "json"
+log_level        = "{{ vault_log_level | default('info') }}"
+log_format       = "{{ vault_log_format | default('json') }}"
+
+max_lease_ttl = "{{ vault_max_lease_ttl | default('87600h') }}"
+default_lease_ttl = "{{ vault_default_lease_ttl | default('768h') }}"
 
 storage "raft" {
   path    = "{{ vault_data_dir }}"
@@ -26,8 +29,23 @@ listener "tcp" {
 {% if vault_tls_enabled | default(false) %}
   tls_cert_file   = "{{ vault_tls_cert_file }}"
   tls_key_file    = "{{ vault_tls_key_file }}"
+  # producton secure TLS settings
+  tls_min_version = "tls12"
+  tls_cipher_suites = "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+
 {% endif %}
 }
+
+{% if vault_telemetry_enabled | default(false) %}
+# Enable telemetry (optional for monitoring)
+telemetry {
+  prometheus_retention_time = "30s"
+  disable_hostname = true
+}
+{% endif %}
+
+# Optionally add performance/standby redundancy
+# performance_standby = true
 
 api_addr     = "{{ 'https' if vault_tls_enabled | default(false) else 'http' }}://{{ ansible_host }}:{{ vault_api_port }}"
 cluster_addr = "{{ 'https' if vault_tls_enabled | default(false) else 'http' }}://{{ ansible_host }}:{{ vault_cluster_port }}"

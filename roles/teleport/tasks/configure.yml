@@ -15,6 +15,13 @@
     group: "{{ teleport_group }}"
     mode: 0640
 
+- name: Ensure Teleport proxy public domain is set
+  ansible.builtin.assert:
+    that:
+      - teleport_proxy_public_domain is defined
+      - teleport_proxy_public_domain != ""
+    msg: "teleport_proxy_public_domain must be defined and not empty"
+
 - name: Generate Teleport config
   ansible.builtin.template:
     src: teleport_config.yaml.j2

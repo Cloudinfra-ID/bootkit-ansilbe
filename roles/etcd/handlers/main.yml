@@ -1,0 +1,9 @@
+---
+#- name: Run systemctl restart etcd
+#  listen: 'systemctl restart etcd'
+#  become: true
+#  ansible.builtin.systemd_service:
+#    name: 'etcd'
+#    enabled: true
+#    state: 'restarted'
+#  notify: "systemctl restart etcd.service"

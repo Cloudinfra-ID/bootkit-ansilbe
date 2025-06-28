@@ -1,0 +1,47 @@
+name: "{{ etcd_node_name }}"
+data-dir: "{{ etcd_data_dir }}"
+snapshot-count: 10000
+heartbeat-interval: 100
+election-timeout: 1000
+listen-peer-urls: {{ 'https' if etcd_tls_enabled | default(false) else 'http' }}://{{ etcd_node_host }}:{{ etcd_peer_port }}
+listen-client-urls: "{{ 'https' if etcd_tls_enabled | default(false) else 'http' }}://{{ etcd_node_host }}:{{ etcd_client_port }},{{ 'https' if etcd_tls_enabled | default(false) else 'http' }}://127.0.0.1:{{ etcd_client_port }}"
+advertise-client-urls: "{{ 'https' if etcd_tls_enabled | default(false) else 'http' }}://{{ etcd_node_host }}:{{ etcd_client_port }}"
+initial-advertise-peer-urls: "{{ 'https' if etcd_tls_enabled | default(false) else 'http' }}://{{ etcd_node_host }}:{{ etcd_peer_port }}"
+{% set protocol = 'https' if etcd_tls_enabled else 'http' -%}
+{%- set etcd_peers = [] -%}
+{%- for host in groups['etcd'] -%}
+  {%- set name = host -%}
+  {%- set ip = hostvars[host]['ansible_host'] -%}
+  {%- set url = name ~ '=' ~ protocol ~ '://' ~ ip ~ ':' ~ etcd_peer_port -%}
+  {%- if host == inventory_hostname -%}
+    {%- set _ = etcd_peers.insert(0, url) -%}
+  {%- else -%}
+    {%- set _ = etcd_peers.append(url) -%}
+  {%- endif -%}
+{%- endfor -%}
+initial-cluster: "{{ etcd_peers | join(',') }}"
+initial-cluster-state: {{ etcd_initial_cluster_state }}
+initial-cluster-token: "{{ etcd_initial_cluster_token }}"
+{% if etcd_tls_enabled %}
+client-transport-security:
+  cert-file: "{{ etcd_tls_cert_file }}"
+  key-file: "{{ etcd_tls_key_file }}"
+  client-cert-auth: {{ etcd_tls_client_cert_auth | string | lower }}
+  trusted-ca-file: "{{ etcd_tls_ca_file }}"
+peer-transport-security:
+  cert-file: "{{ etcd_tls_cert_file }}"
+  key-file: "{{ etcd_tls_key_file }}"
+  peer-client-cert-auth: {{ etcd_tls_client_cert_auth | string | lower }}
+  trusted-ca-file: "{{ etcd_tls_ca_file }}"
+{% endif %}
+enable-v2: {{ etcd_enable_v2 | string | lower }}
+quota-bytes: {{ etcd_quota_bytes }}
+auto-compaction-retention: "{{ etcd_auto_compaction_retention }}"
+auto-compaction-mode: "{{ etcd_auto_compaction_mode }}"
+snapshot-count: {{ etcd_snapshot_count }}
+max-wals: {{ etcd_max_wals }}
+enable-pprof: {{ etcd_enable_pprof | string | lower }}
+metrics: {{ etcd_metrics }}
+listen-metrics-urls: "{{ etcd_metrics_url }}"
+logger: "{{ etcd_logger }}"
+log-level: "{{ etcd_log_level }}"

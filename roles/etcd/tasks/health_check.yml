@@ -1,0 +1,34 @@
+---
+- name: Check Etcd cluster endpoint status (TLS)
+  shell: |
+    export ETCDCTL_API=3
+    etcdctl \
+      --endpoints={% for host in groups['etcd'] %}https://{{ hostvars[host]['ansible_host'] }}:{{ etcd_client_port }}{% if not loop.last %},{% endif %}{% endfor %} \
+      --cert={{ etcd_tls_cert_file }} \
+      --key={{ etcd_tls_key_file }} \
+      --cacert={{ etcd_tls_ca_file }} \
+      endpoint health
+  register: etcd_health
+  changed_when: false
+  failed_when: false
+
+- name: Check Etcd cluster member status (TLS)
+  shell: |
+    export ETCDCTL_API=3
+    etcdctl \
+      --endpoints={% for host in groups['etcd'] %}https://{{ hostvars[host]['ansible_host'] }}:{{ etcd_client_port }}{% if not loop.last %},{% endif %}{% endfor %} \
+      --cert={{ etcd_tls_cert_file }} \
+      --key={{ etcd_tls_key_file }} \
+      --cacert={{ etcd_tls_ca_file }} \
+      member list
+  register: etcd_member_status
+  changed_when: false
+  failed_when: false
+
+- name: Show Etcd health status
+  debug:
+    var: etcd_health.stdout_lines
+
+- name: Show Etcd member status
+  debug:
+    var: etcd_member_status.stdout_lines

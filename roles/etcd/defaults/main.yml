@@ -1,0 +1,57 @@
+# Etcd
+etcd_version: "v3.6.1"
+etcd_arch: "amd64"
+etcd_download_url: "https://storage.googleapis.com/etcd"
+
+# Etcd directories
+etcd_install_dir: "/usr/local/bin"
+etcd_data_dir: "/var/lib/etcd"
+etcd_config_dir: "/etc/etcd"
+etcd_ssl_dir: "/etc/etcd/ssl"
+
+# Etcd user and group
+etcd_user: "etcd"
+etcd_group: "etcd"
+
+# Etcd configuration file
+etcd_config_file: "/etc/etcd/etcd.yaml"
+
+# Etcd cluster settings
+etcd_enable_v2: true
+etcd_cluster_enabled: true
+etcd_cluster_name: "etcd-cluster"
+etcd_initial_cluster_token: "etcd-cluster-token"  # Unique token for the cluster
+etcd_initial_cluster_state: "new"  # Use "existing" for joining an existing
+
+# Etcd node settings
+etcd_node_name: "{{ inventory_hostname }}"
+etcd_node_host: "{{ ansible_host }}"
+etcd_peer_port: 2380
+etcd_client_port: 2379
+
+# Etcd production improvements
+# prevent from consuming too much disk space
+etcd_quota_bytes: 8589934592  # 8 GiB
+# add autocompaction settings to ensure efficient storage management
+etcd_auto_compaction_retention: "10000"
+etcd_auto_compaction_mode: "revision"
+# limit snapshot retention to manage disk space
+etcd_snapshot_count: 5
+etcd_max_wals: 5
+
+# Etcd TLS configuration
+etcd_tls_enabled: true
+etcd_tls_ca_file: "/usr/local/share/ca-certificates/etcd-ca.crt"
+etcd_tls_cert_file: "/etc/etcd/ssl/etcd.crt"
+etcd_tls_key_file: "/etc/etcd/ssl/etcd.key"
+etcd_tls_client_cert_auth: true
+
+# Etcd logging and telemetry
+etcd_logger: "zap"
+etcd_log_level: "warn"
+# expose performance metrics
+etcd_enable_pprof: true
+# metrics url
+etcd_metrics_url: "http://{{ ansible_host }}:2381"
+# more detailed metrics
+etcd_metrics: "extensive" # options: "basic", "extensive", "off"

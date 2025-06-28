@@ -1,0 +1,63 @@
+---
+- name: Generate Etcd configuration
+  ansible.builtin.template:
+    src: etcd_config.yaml.j2
+    dest: "{{ etcd_config_file }}"
+    owner: "{{ etcd_user }}"
+    group: "{{ etcd_group }}"
+    mode: 0640
+
+- name: Copy Etcd SSL certificate
+  ansible.builtin.copy:
+    src: "etcd.crt"
+    dest: "{{ etcd_tls_cert_file }}"
+    owner: "{{ etcd_user }}"
+    group: "{{ etcd_group }}"
+    mode: 0640
+  when: etcd_tls_enabled
+
+- name: Copy Etcd SSL key
+  ansible.builtin.copy:
+    src: "etcd.key"
+    dest: "{{ etcd_tls_key_file }}"
+    owner: "{{ etcd_user }}"
+    group: "{{ etcd_group }}"
+    mode: 0640
+  when: etcd_tls_enabled
+
+- name: Copy Etcd CA certificate to trusted CA
+  ansible.builtin.copy:
+    src: "etcd-ca.crt"
+    dest: "{{ etcd_tls_ca_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: etcd_tls_enabled
+
+- name: Update Etcd trusted CA certificates
+  ansible.builtin.command: update-ca-certificates
+  register: update_ca_output
+  changed_when: "'added new certificate' in update_ca_output.stdout"
+  when: etcd_tls_enabled
+
+- name: Generate Etcd systemd service
+  ansible.builtin.template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+    mode: 0644
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start Etcd service
+  ansible.builtin.systemd:
+    name: etcd
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+# - name: Set Vault api and cluster configuration
+#   set_fact:
+#     vault_api_addr: "{{ 'https' if vault_tls_enabled | default(false) else 'http' }}://{{ ansible_host }}:{{ vault_api_port }}"
+#     vault_cluster_addr: "{{ 'https' if vault_tls_enabled | default(false) else 'http' }}://{{ ansible_host }}:{{ vault_cluster_port }}"

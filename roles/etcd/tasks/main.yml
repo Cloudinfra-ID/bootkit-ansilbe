@@ -1,0 +1,10 @@
+---
+- name: Install Etcd
+  ansible.builtin.include_tasks:
+    file: 'install.yml'
+- name: Configure Etcd
+  ansible.builtin.include_tasks:
+    file: 'configure.yml'
+- name: Check Etcd health
+  ansible.builtin.include_tasks:
+    file: 'health_check.yml'

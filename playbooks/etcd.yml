@@ -1,0 +1,19 @@
+---
+- hosts: etcd
+  become: yes
+  #vars:
+  vars_prompt:
+    - name: etcd_version
+      prompt: "Enter the Etcd version"
+      private: no
+      default: "v3.6.1"
+    - name: etcd_cluster_name
+      prompt: "Enter the Etcd cluster name"
+      private: no
+      default: "etcd-cluster"
+    - name: etcd_initial_cluster_token
+      prompt: "Enter the Etcd initial cluster token"
+      private: yes
+      default: "etcd-cluster-token"
+  roles:
+    - role: ../roles/etcd

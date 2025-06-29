@@ -1,0 +1,14 @@
+# PostgreSQL
+postgresql_version: "17"
+postgresql_client_version: "17"
+
+# PostgreSQL directories
+postgresl_base_dir: "/var/lib/postgresql"
+postgresql_data_dir: "{{ postgresl_base_dir }}/{{ postgresql_version }}/main"
+postgresql_config_dir: "/etc/postgresql/{{ postgresql_version }}/main"
+postgresql_bin_dir: "/usr/lib/postgresql/{{ postgresql_version }}/bin"
+postgresql_ssl_dir: "/etc/postgresql/{{ postgresql_version }}/ssl"
+
+# PostgreSQL user and group
+postgresql_user: "postgres"
+postgresql_group: "postgres"

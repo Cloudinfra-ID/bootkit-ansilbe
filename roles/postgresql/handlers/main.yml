@@ -1,0 +1,9 @@
+---
+#- name: Run systemctl restart postgresql
+#  listen: 'systemctl restart postgresql'
+#  become: true
+#  ansible.builtin.systemd_service:
+#    name: 'postgresql'
+#    enabled: true
+#    state: 'restarted'
+#  notify: "systemctl restart postgresql.service"

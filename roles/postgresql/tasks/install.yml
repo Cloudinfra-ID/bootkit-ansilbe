@@ -1,0 +1,84 @@
+---
+- name: Install dependencies (RedHat)
+  ansible.builtin.package:
+    name:
+      - unzip
+      - gnupg
+      - openssl
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: Install dependencies (Debian)
+  ansible.builtin.package:
+    name:
+      - unzip
+      - gnupg
+      - openssl
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Create pgdg keyring directory
+  file:
+    path: /usr/share/postgresql-common/pgdg
+    state: directory
+    mode: '0755'
+
+- name: Download PostgreSQL signing key
+  get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+    mode: '0644'
+    force: yes
+
+- name: Get Postgresql release codename
+  ansible.builtin.command: lsb_release -cs
+  register: os_codename
+  changed_when: false
+
+- name: Add PostgreSQL APT repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt {{ os_codename.stdout }}-pgdg main"
+    filename: pgdg
+    state: present
+
+- name: Install PostgreSQL server and client
+  apt:
+    name:
+      - postgresql-{{ postgresql_version }}
+      - postgresql-client-{{ postgresql_client_version }}
+    state: present
+    update_cache: yes
+
+- name: Ensure PostgreSQL group exists
+  ansible.builtin.group:
+    name: "{{ postgresql_group }}"
+    state: present
+    system: yes
+
+- name: Ensure PostgreSQL user exists
+  ansible.builtin.user:
+    name: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    system: yes
+    shell: /bin/bash
+    home: "{{ postgresl_base_dir }}"
+    create_home: no
+
+- name: Ensure PostgreSQL directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: '0750'
+  loop:
+    - "{{ postgresql_data_dir }}"
+    - "{{ postgresql_config_dir }}"
+    - "{{ postgresql_bin_dir }}"
+    - "{{ postgresql_ssl_dir }}"
+
+- name: Ensure PostgreSQL systemd service is enabled and started
+  ansible.builtin.systemd:
+    name: postgresql@{{ postgresql_version }}-main
+    enabled: yes
+    state: started

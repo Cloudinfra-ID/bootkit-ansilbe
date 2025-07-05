@@ -1,0 +1,94 @@
+---
+- name: Ensure Etcd hosts is defined and not empty
+  ansible.builtin.assert:
+    that:
+      - patroni_etcd_hosts is defined
+      - patroni_etcd_hosts != ""
+    msg: "patroni_etcd_hosts must be defined and not empty"
+
+- name: Copy Etcd SSL certificate
+  ansible.builtin.copy:
+    src: "etcd.crt"
+    dest: "{{ patroni_etcd_tls_cert_file}}"
+    owner: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+    mode: 0640
+  when: patroni_etcd_tls_enabled | default(false)
+
+- name: Copy Etcd SSL key
+  ansible.builtin.copy:
+    src: "etcd.key"
+    dest: "{{ patroni_etcd_tls_key_file }}"
+    owner: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+    mode: 0640
+  when: patroni_etcd_tls_enabled | default(false)
+
+- name: Ensure Patroni PostgreSQL admin password is set
+  ansible.builtin.assert:
+    that:
+      - patroni_postgresql_admin_password is defined
+      - patroni_postgresql_admin_password != ""
+    msg: "patroni_postgresql_admin_password must be defined and not empty"
+
+- name: Ensure Patroni PostgreSQL monitoring password is set
+  ansible.builtin.assert:
+    that:
+      - patroni_postgresql_monitoring_password is defined
+      - patroni_postgresql_monitoring_password != ""
+    msg: "patroni_postgresql_monitoring_password must be defined and not empty"
+
+- name: Ensure Patroni PostgeSQL superuser password is set
+  ansible.builtin.assert:
+    that:
+      - patroni_postgresql_superuser_password is defined
+      - patroni_postgresql_superuser_password != ""
+    msg: "patroni_postgresql_superuser_password must be defined and not empty"
+
+- name: Ensure Patroni PostgeSQL replication password is set
+  ansible.builtin.assert:
+    that:
+      - patroni_postgresql_replication_password is defined
+      - patroni_postgresql_replication_password != ""
+    msg: "patroni_postgresql_replication_password must be defined and not empty"
+
+- name: Ensure Etcd hosts are defined and not empty
+  ansible.builtin.assert:
+    that:
+      - patroni_etcd_hosts is defined
+      - patroni_etcd_hosts != ""
+    msg: "patroni_etcd_hosts must be defined and not empty"
+
+- name: Copy Etcd CA certificate to trusted CA
+  ansible.builtin.copy:
+    src: "etcd-ca.crt"
+    dest: "{{ patroni_etcd_tls_ca_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: patroni_etcd_tls_enabled | default(false)
+
+- name: Generate Patroni configuration
+  ansible.builtin.template:
+    src: patroni_config.yaml.j2
+    dest: "{{ patroni_config_file }}"
+    owner: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+    mode: 0640
+
+- name: Generate Patroni systemd service
+  ansible.builtin.template:
+    src: patroni.service.j2
+    dest: /etc/systemd/system/patroni.service
+    mode: 0644
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start Patroni service
+  ansible.builtin.systemd:
+    name: patroni
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

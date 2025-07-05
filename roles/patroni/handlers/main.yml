@@ -1,0 +1,9 @@
+---
+#- name: Run systemctl restart patroni
+#  listen: 'systemctl restart patroni'
+#  become: true
+#  ansible.builtin.systemd_service:
+#    name: 'patroni'
+#    enabled: true
+#    state: 'restarted'
+#  notify: "systemctl restart patroni.service"

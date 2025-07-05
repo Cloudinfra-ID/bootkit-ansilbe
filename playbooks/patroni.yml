@@ -1,0 +1,27 @@
+---
+- hosts: patroni
+  become: yes
+  #vars:
+  vars_prompt:
+    - name: patroni_version
+      prompt: "Enter the Patroni version"
+      private: no
+      default: "3.3.7"
+    - name: patroni_cluster_name
+      prompt: "Enter the Patroni cluster name"
+      private: no
+      default: "patroni-cluster"
+    - name: setup_etcd
+      prompt: "Do you want to set up Etcd? (yes/no)"
+      private: no
+      default: "yes"
+    - name: "setup_postgresql"
+      prompt: "Do you want to set up PostgreSQL? (yes/no)"
+      private: no
+      default: "yes"
+  roles:
+    - role: ../roles/etcd
+      when: setup_etcd | lower == 'yes'
+    - role: ../roles/postgresql
+      when: setup_postgresql | lower == 'yes'
+    - role: ../roles/patroni

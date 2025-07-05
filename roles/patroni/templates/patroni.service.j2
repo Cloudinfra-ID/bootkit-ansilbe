@@ -1,0 +1,15 @@
+[Unit]
+Description=Patroni PostgreSQL High Availability
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User={{ patroni_user }}
+Group={{ patroni_group }}
+Environment="VIRTUAL_ENV={{ patroni_venv_dir }}"
+ExecStart={{ patroni_venv_dir }}/bin/patroni {{ patroni_config_file }}
+Restart=on-failure
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

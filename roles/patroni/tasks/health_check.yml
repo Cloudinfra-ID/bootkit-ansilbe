@@ -1,0 +1,26 @@
+---
+- name: Wait for Patroni port to be available
+  ansible.builtin.wait_for:
+    port: "{{ patroni_restapi_listen.split(':')[1] }}"
+    host: "{{ ansible_host }}"
+    delay: 10
+    timeout: 60
+
+- name: Check Patroni REST API status
+  ansible.builtin.uri:
+    url: "http://{{ patroni_restapi_connect_address }}/health"
+    method: GET
+    return_content: yes
+  register: patroni_health
+  failed_when: patroni_health.status != 200
+
+- name: Check Patroni member list
+  shell: |
+    sudo -u {{ patroni_user }} {{ patroni_venv_dir }}/bin/patronictl -c {{ patroni_config_file }} list
+  register: patroni_member_list
+  changed_when: false
+  failed_when: patroni_member_list.rc != 0
+
+- name: Show Patroni member list
+  debug:
+    var: patroni_member_list.stdout_lines

@@ -1,0 +1,63 @@
+---
+- name: Install dependencies (RedHat)
+  ansible.builtin.package:
+    name:
+      - unzip
+      - gnupg
+      - openssl
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: Install dependencies (Debian)
+  ansible.builtin.package:
+    name:
+      - unzip
+      - gnupg
+      - openssl
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Install Patroni dependencies
+  ansible.builtin.package:
+    name:
+      - python3-pip
+      - python3-venv
+    state: present
+
+- name: Ensure Patroni group exists
+  ansible.builtin.group:
+    name: "{{ patroni_group }}"
+    state: present
+    system: yes
+
+- name: Ensure Patroni user exists
+  ansible.builtin.user:
+    name: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+    system: yes
+    shell: /sbin/nologin
+    create_home: no
+
+- name: Create Patroni directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+    mode: '0750'
+  loop:
+    - "{{ patroni_base_dir }}"
+    - "{{ patroni_data_dir }}"
+    - "{{ patroni_config_dir }}"
+    - "{{ patroni_ssl_dir }}"
+    - "{{ patroni_venv_dir }}"
+    - "{{ patroni_postgresql_parameters.unix_socket_directories }}"
+
+- name: Setup Python virtual environment for Patroni
+  command: sudo -u {{ patroni_user }} python3 -m venv {{ patroni_venv_dir }}
+
+- name: Install Patroni Python package in virtual environment
+  command: "sudo -u {{ patroni_user }} {{ patroni_venv_dir }}/bin/pip install 'patroni[etcd3]=={{ patroni_version }}'"
+
+- name: Install Patroni psycopg2 package in virtual environment
+  command: "sudo -u {{ patroni_user }} {{ patroni_venv_dir }}/bin/pip install 'psycopg2-binary'"

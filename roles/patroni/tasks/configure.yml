@@ -24,6 +24,13 @@
     mode: 0640
   when: patroni_etcd_tls_enabled | default(false)
 
+- name: Ensure Etcd hosts are defined and not empty
+  ansible.builtin.assert:
+    that:
+      - patroni_etcd_hosts is defined
+      - patroni_etcd_hosts != ""
+    msg: "patroni_etcd_hosts must be defined and not empty"
+
 - name: Ensure Patroni PostgreSQL admin password is set
   ansible.builtin.assert:
     that:
@@ -38,13 +45,6 @@
       - patroni_postgresql_monitoring_password != ""
     msg: "patroni_postgresql_monitoring_password must be defined and not empty"
 
-- name: Ensure Patroni PostgeSQL superuser password is set
-  ansible.builtin.assert:
-    that:
-      - patroni_postgresql_superuser_password is defined
-      - patroni_postgresql_superuser_password != ""
-    msg: "patroni_postgresql_superuser_password must be defined and not empty"
-
 - name: Ensure Patroni PostgeSQL replication password is set
   ansible.builtin.assert:
     that:
@@ -52,12 +52,12 @@
       - patroni_postgresql_replication_password != ""
     msg: "patroni_postgresql_replication_password must be defined and not empty"
 
-- name: Ensure Etcd hosts are defined and not empty
+- name: Ensure Patroni PostgeSQL superuser password is set
   ansible.builtin.assert:
     that:
-      - patroni_etcd_hosts is defined
-      - patroni_etcd_hosts != ""
-    msg: "patroni_etcd_hosts must be defined and not empty"
+      - patroni_postgresql_superuser_password is defined
+      - patroni_postgresql_superuser_password != ""
+    msg: "patroni_postgresql_superuser_password must be defined and not empty"
 
 - name: Copy Etcd CA certificate to trusted CA
   ansible.builtin.copy:

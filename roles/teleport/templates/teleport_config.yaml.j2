@@ -24,7 +24,7 @@ teleport:
 auth_service:
   enabled: "yes"
   cluster_name: {{ teleport_cluster_name }}
-  listen_addr: 0.0.0.0:3025
+  listen_addr: 0.0.0.0:{{ teleport_auth_port }}
   proxy_listener_mode: multiplex
   #authentication:
   #  type: github
@@ -33,6 +33,7 @@ auth_service:
 
 ssh_service:
   enabled: "yes"
+  listen_addr: 0.0.0.0:{{ teleport_ssh_port }}
 
 proxy_service:
   enabled: "yes"

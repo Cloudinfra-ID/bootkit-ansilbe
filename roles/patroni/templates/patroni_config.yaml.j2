@@ -1,0 +1,113 @@
+scope: {{ patroni_scope }}
+namespace: /{{ patroni_namespace }}/
+name: {{ patroni_node_name }}
+
+restapi:
+  listen: {{ patroni_restapi_listen }}
+  connect_address: {{ patroni_restapi_connect_address }}
+
+etcd3:
+  hosts:
+{% for host in patroni_etcd_hosts.split(',') %}
+    - {{ host }}
+{% endfor %}
+{% if patroni_etcd_tls_enabled %}
+  protocol: https
+  cacert: {{ patroni_etcd_tls_ca_file }}
+  cert: {{ patroni_etcd_tls_cert_file }}
+  key: {{ patroni_etcd_tls_key_file }}
+{% endif %}
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576  # 1MB
+    # Enhanced failover settings
+    master_start_timeout: 300
+    synchronous_mode: false
+    synchronous_mode_strict: false
+    # Prevent automatic failover during maintenance
+    pause: false
+    check_timeline: true
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+
+  pg_hba:
+{% for host in groups['patroni'] %}
+    - host replication replicator {{ hostvars[host]['ansible_host'] }}/0 md5
+{% endfor %}
+    - host all all 0.0.0.0/0 md5
+    - host replication replicator 0.0.0.0/0 md5
+
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+    - locale: en_US.UTF-8
+    - auth-host: scram-sha-256
+    - auth-local: peer
+
+  # User creation for monitoring and applications
+  users:
+    {{ patroni_postgresql_admin_username }}:
+      password: {{ patroni_postgresql_admin_password }}
+      options:
+        - createrole
+        - createdb
+    {{ patroni_postgresql_monitoring_username }}:
+      password: {{ patroni_postgresql_monitoring_password }}
+      options:
+        - login
+        - replication
+
+postgresql:
+  listen: {{ patroni_postgresql_listen }}
+  connect_address: {{ patroni_postgresql_connect_address }}
+  data_dir: {{ patroni_postgresql_data_dir }}
+  bin_dir: {{ patroni_postgresql_bin_dir }}
+  # currentyl disabled, due to issues with bootstrap authentication
+  #config_dir: {{ patroni_postgresql_config_dir }}
+  authentication:
+    replication:
+      username: {{ patroni_postgresql_replication_username }}
+      password: {{ patroni_postgresql_replication_password }}
+    superuser:
+      username: {{ patroni_postgresql_superuser_username }}
+      password: {{ patroni_postgresql_superuser_password }}
+  pgpass: {{ patroni_base_dir }}/.pgpass
+  parameters:
+    # Connection settings
+    unix_socket_directories: "{{ patroni_postgresql_parameters.unix_socket_directories }}"
+    max_connections: {{ patroni_postgresql_parameters.max_connections }}
+    superuser_reserved_connections: {{ patroni_postgresql_parameters.superuser_reserved_connections }}
+    
+    # Memory settings (adjust based on available RAM)
+    shared_buffers: {{ patroni_postgresql_parameters.shared_buffers }}
+    effective_cache_size: {{ patroni_postgresql_parameters.effective_cache_size }}
+    work_mem: {{ patroni_postgresql_parameters.work_mem }}
+    maintenance_work_mem: {{ patroni_postgresql_parameters.maintenance_work_mem }}
+
+    # SSL settings (optional, enable if using SSL)
+    ssl: {{ patroni_postgresql_parameters.ssl }}
+    ssl_cert_file: {{ patroni_postgresql_parameters.ssl_cert_file }}
+    ssl_key_file: {{ patroni_postgresql_parameters.ssl_key_file }}
+    ssl_ca_file: {{ patroni_postgresql_parameters.ssl_ca_file }}
+    ssl_ciphers: {{ patroni_postgresql_parameters.ssl_ciphers }}
+    ssl_prefer_server_ciphers: {{ patroni_postgresql_parameters.ssl_prefer_server_ciphers }}
+    password_encryption: {{ patroni_postgresql_parameters.password_encryption }}
+
+watchdog:
+  mode: automatic
+  device: /dev/watchdog
+  safety_margin: 5
+
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false
+  # Custom tags for monitoring and management
+  environment: {{ patroni_environment }}
+  version: "{{ patroni_postgresql_version }}"

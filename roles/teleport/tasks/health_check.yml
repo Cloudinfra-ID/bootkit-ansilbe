@@ -1,0 +1,27 @@
+---
+- name: Wait for Teleport authentication port to be available
+  ansible.builtin.wait_for:
+    port: "{{ teleport_auth_port }}"
+    host: "{{ ansible_host }}"
+    delay: 10
+    timeout: 60
+
+- name: Check Teleport status
+  command: tctl status
+  register: teleport_status
+  changed_when: false
+  failed_when: teleport_status.rc != 0
+
+- name: Show Teleport status
+  debug:
+    var: teleport_status.stdout_lines
+
+- name: Check Teleport nodes list
+  command: tctl nodes ls
+  register: teleport_nodes
+  changed_when: false
+  failed_when: teleport_nodes.rc != 0
+
+- name: Show Teleport nodes list
+  debug:
+    var: teleport_nodes.stdout_lines

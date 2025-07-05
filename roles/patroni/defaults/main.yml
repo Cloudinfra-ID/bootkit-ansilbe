@@ -1,0 +1,70 @@
+# Patroni
+patroni_version: "3.3.7"
+patroni_environment: "production" # Set to 'production' or 'development'
+
+# Patroni directories
+patroni_base_dir: "/var/lib/patroni"
+patroni_data_dir: "{{ patroni_base_dir }}/data"
+patroni_config_dir: "/etc/patroni"
+patroni_ssl_dir: "{{ patroni_config_dir }}/ssl"
+patroni_venv_dir: "{{ patroni_base_dir }}/venv"
+
+# Patroni configuration file
+patroni_config_file: "{{ patroni_config_dir }}/patroni.yaml"
+
+# Patroni user and group
+patroni_user: "postgres" # Set to the PostgreSQL user
+patroni_group: "postgres" # set to the PostgreSQL group
+
+# Patroni cluster settings
+patroni_scope: "posgresql-cluster"
+patroni_namespace: "patroni"
+patroni_cluster_name: "patroni-cluster-prd"
+patroni_node_name: "{{ inventory_hostname }}"
+
+# Patroni REST API settings
+patroni_restapi_listen: "{{ ansible_host }}:8008"
+patroni_restapi_connect_address: "{{ ansible_host }}:8008"
+
+# Patroni PostgreSQL settings
+patroni_postgresql_version: "17"
+patroni_postgresql_listen: "{{ ansible_host }}:5432"
+patroni_postgresql_connect_address: "{{ ansible_host }}:5432"
+# Patroni PostgreSQL authentication settings
+patroni_postgresql_admin_username: "admin"
+patroni_postgresql_admin_password: "" # Change this to a secure password
+patroni_postgresql_monitoring_username: "monitoring"
+patroni_postgresql_monitoring_password: "" # Change this to a
+patroni_postgresql_replication_username: "replicator"
+patroni_postgresql_replication_password: "" # Change this to a secure password
+patroni_postgresql_superuser_username: "postgres"
+patroni_postgresql_superuser_password: "" # Change this to a secure password
+patroni_postgresql_data_dir: "{{ patroni_data_dir }}" # Put inside patroni_data_dir
+patroni_postgresql_config_dir: "/etc/postgresql/{{ patroni_postgresql_version }}/main" # Use PostgreSQL config dir or inside patroni_config_dir
+patroni_postgresql_bin_dir: "/usr/lib/postgresql/{{ patroni_postgresql_version }}/bin"
+# Patroni PostgreSQL parameters
+patroni_postgresql_parameters:
+  unix_socket_directories: "/var/run/patroni"
+# Connection settings
+  max_connections: 200
+  superuser_reserved_connections: 3
+# Memory settings (adjust based on available RAM)
+  shared_buffers: 256MB
+  effective_cache_size: 1GB
+  work_mem: 4MB
+  maintenance_work_mem: 64MB
+# SSL settings (optional, enable if using SSL)
+  ssl: "on"
+  ssl_cert_file: "{{ patroni_ssl_dir }}/patroni.crt"
+  ssl_key_file: "{{ patroni_ssl_dir }}/patroni.key"
+  ssl_ca_file: "/usr/local/share/ca-certificates/patroni-ca.crt"
+  ssl_ciphers: "'HIGH:MEDIUM:+3DES:!aNULL'"
+  ssl_prefer_server_ciphers: "on"
+  password_encryption: scram-sha-256
+
+# Patroni Etcd settings
+patroni_etcd_hosts: "" # Change this to your Etcd cluster addresses, e.g., "etcd1:2379,etcd2:2379,etcd3:2379"
+patroni_etcd_tls_enabled: true
+patroni_etcd_tls_cert_file: "{{ patroni_ssl_dir }}/etcd.crt"
+patroni_etcd_tls_key_file: "{{ patroni_ssl_dir }}/etcd.key"
+patroni_etcd_tls_ca_file: "{{ patroni_ssl_dir }}/etcd-ca.crt"

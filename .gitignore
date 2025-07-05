@@ -1,3 +1,5 @@
 # ignore ssl cert & key files
 roles/*/files/*.crt
 roles/*/files/*.key
+scripts/certs/
+scripts/config/

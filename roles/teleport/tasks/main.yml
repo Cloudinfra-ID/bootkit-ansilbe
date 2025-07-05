@@ -6,3 +6,7 @@
 - name: Configure Teleport
   ansible.builtin.include_tasks:
     file: 'configure.yml'
+
+- name: Check Teleport health
+  ansible.builtin.include_tasks:
+    file: 'health_check.yml'

@@ -2,21 +2,6 @@
 teleport_version: "v17.5.2"
 teleport_architecture: "amd64"
 
-# Teleport node settings
-teleport_nodename: "{{ inventory_hostname }}"
-teleport_advertise_ip: "{{ ansible_host }}"
-
-# Teleport proxy settings
-teleport_proxy_public_domain: ""
-teleport_proxy_public_port: 443
-teleport_proxy_https_cert_file: "/etc/teleport/ssl/teleport.crt"
-teleport_proxy_https_key_file: "/etc/teleport/ssl/teleport.key"
-teleport_proxy_web_listen_port: 443
-
-# Teleport user and group
-teleport_user: "teleport"
-teleport_group: "teleport"
-
 # Directories
 teleport_install_dir: "/usr/local/bin"
 teleport_config_dir: "/etc/teleport"
@@ -24,12 +9,31 @@ teleport_data_dir: "/var/lib/teleport"
 teleport_log_dir: "/var/log/teleport"
 teleport_ssl_dir: "/etc/teleport/ssl"
 
+# Teleport user and group
+teleport_user: "teleport"
+teleport_group: "teleport"
+
+# Teleport port settings
+teleport_ssh_port: 3022
+teleport_auth_port: 3025
+
+# Teleport node settings
+teleport_nodename: "{{ inventory_hostname }}"
+teleport_advertise_ip: "{{ ansible_host }}"
+
+# Teleport proxy settings
+teleport_proxy_public_domain: ""
+teleport_proxy_public_port: 443
+teleport_proxy_https_cert_file: "{{ teleport_ssl_dir }}/teleport.crt"
+teleport_proxy_https_key_file: "{{ teleport_ssl_dir }}/teleport.key"
+teleport_proxy_web_listen_port: 443
+
 # Teleport configuration file
-teleport_config_file: "/etc/teleport/teleport.yaml"
+teleport_config_file: "{{ teleport_config_dir }}/teleport.yaml"
 
 # Teleport log settings
 teleport_log_level: "INFO"  # Options: DEBUG, INFO, WARN, ERROR, FATAL
-teleport_log_file: "/var/log/teleport/teleport.log"
+teleport_log_file: "{{ teleport_log_dir }}/teleport.log"
 teleport_log_format: "json"
 
 # Teleport cluster settings

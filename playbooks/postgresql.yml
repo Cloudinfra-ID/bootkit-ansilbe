@@ -1,0 +1,11 @@
+---
+- hosts: postgresql
+  become: yes
+  #vars:
+  vars_prompt:
+    - name: postgresql_version
+      prompt: "Enter the PostgreSQL version"
+      private: no
+      default: "17"
+  roles:
+    - role: ../roles/postgresql

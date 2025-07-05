@@ -21,8 +21,41 @@
     dest: "{{ patroni_etcd_tls_key_file }}"
     owner: "{{ patroni_user }}"
     group: "{{ patroni_group }}"
-    mode: 0640
+    mode: 0600
   when: patroni_etcd_tls_enabled | default(false)
+
+- name: Copy Patroni SSL certificate
+  ansible.builtin.copy:
+    src: "patroni.crt"
+    dest: "{{ patroni_postgresql_parameters.ssl_cert_file }}"
+    owner: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+    mode: 0640
+  when: patroni_postgresql_parameters.ssl == "on"
+
+- name: Copy Patroni SSL key
+  ansible.builtin.copy:
+    src: "patroni.key"
+    dest: "{{ patroni_postgresql_parameters.ssl_key_file }}"
+    owner: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+    mode: 0600
+  when: patroni_postgresql_parameters.ssl == "on"
+
+- name: Copy Patroni CA certificate
+  ansible.builtin.copy:
+    src: "patroni-ca.crt"
+    dest: "{{ patroni_postgresql_parameters.ssl_ca_file }}"
+    owner: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+    mode: 0640
+  when: patroni_postgresql_parameters.ssl == "on"
+
+- name: Update Patroni trusted CA certificates
+  ansible.builtin.command: update-ca-certificates
+  register: update_ca_output
+  changed_when: "'added new certificate' in update_ca_output.stdout"
+  when: patroni_postgresql_parameters.ssl == "on"
 
 - name: Ensure Etcd hosts are defined and not empty
   ansible.builtin.assert:

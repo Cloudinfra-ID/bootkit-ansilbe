@@ -1,0 +1,40 @@
+- name: Check if Consul ACL is already bootstrapped (on leader only)
+  uri:
+    url: "http://{{ consul_advertise_addr }}:{{ consul_http_port }}/v1/acl/bootstrap"
+    method: PUT
+    status_code: [200, 403]
+    timeout: 10
+  register: consul_bootstrap_check
+  failed_when: false
+  changed_when: false
+  when: is_consul_master_node | default(false)
+
+- name: Set bootstrap status fact
+  set_fact:
+    consul_acl_bootstrapped: "{{ consul_bootstrap_check.status == 403 }}"
+  when:
+    - is_consul_master_node | default(false)
+    - consul_bootstrap_check is defined
+
+- name: Bootstrap ACL system (on leader only)
+  uri:
+    url: "http://{{ consul_advertise_addr }}:{{ consul_http_port }}/v1/acl/bootstrap"
+    method: PUT
+    body_format: json
+    status_code: 200
+  register: consul_acl_bootstrap
+  when:
+    - is_consul_master_node | default(false)
+    - not consul_acl_bootstrapped | default(false)
+
+- name: Save bootstrap token
+  copy:
+    content: "{{ consul_acl_bootstrap.json.SecretID }}"
+    dest: "{{ consul_config_dir }}/bootstrap.token"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: '0600'
+  when:
+    - consul_acl_bootstrap is not failed
+    - is_consul_master_node | default(false)
+    - not consul_acl_bootstrapped | default(false)

@@ -1,0 +1,61 @@
+---
+- name: Install dependencies (Debian)
+  ansible.builtin.package:
+    name:
+      - ca-certificates
+      - curl
+      - wget
+      - tar
+      - gzip
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Create Consul group
+  ansible.builtin.group:
+    name: "{{ consul_group }}"
+    state: present
+    system: yes
+
+- name: Create Consul user
+  ansible.builtin.user:
+    name: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    system: yes
+    shell: /sbin/nologin
+    create_home: no
+
+- name: Create Consul directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: '0750'
+  loop:
+    - "{{ consul_config_dir }}"
+    - "{{ consul_data_dir }}"
+    - "{{ consul_log_dir }}"
+    - "{{ consul_ssl_dir }}"
+
+- name: Download Consul compressed binary
+  ansible.builtin.get_url:
+    url: "{{ consul_download_url }}"
+    dest: "/tmp/consul.zip"
+
+- name: Unarchive Consul binary
+  ansible.builtin.unarchive:
+    src: "/tmp/consul.zip"
+    dest: "{{ consul_install_dir }}"
+    remote_src: yes
+    creates: "{{ consul_install_dir }}/consul"
+    mode: 0755
+    owner: "root"
+    group: "root"
+
+- name: Check Consul version
+  ansible.builtin.command: "consul version"
+  register: consul_version_output
+
+- name: Show Consul version
+  ansible.builtin.debug:
+    msg: "Consul version installed: {{ consul_version_output.stdout }}"

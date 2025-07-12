@@ -1,0 +1,33 @@
+---
+- name: Copy Consul SSL certificate
+  ansible.builtin.copy:
+    src: "consul.crt"
+    dest: "{{ consul_tls_cert_file }}"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: 0640
+  when: consul_tls_enabled
+
+- name: Copy Consul SSL key
+  ansible.builtin.copy:
+    src: "consul.key"
+    dest: "{{ consul_tls_key_file }}"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: 0600
+  when: consul_tls_enabled
+
+- name: Copy Consul CA certificate to trusted CA
+  ansible.builtin.copy:
+    src: "consul-ca.crt"
+    dest: "{{ consul_tls_ca_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: consul_tls_enabled
+
+- name: Update Consul trusted CA certificates
+  ansible.builtin.command: update-ca-certificates
+  register: update_ca_output
+  changed_when: "'added new certificate' in update_ca_output.stdout"
+  when: consul_tls_enabled

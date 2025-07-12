@@ -1,0 +1,16 @@
+---
+- name: Install Consul
+  ansible.builtin.include_tasks:
+    file: 'install.yml'
+
+- name: Configure Consul SSL
+  ansible.builtin.include_tasks:
+    file: 'ssl_configure.yml'
+
+- name: Configure Consul
+  ansible.builtin.include_tasks:
+    file: 'configure.yml'
+
+- name: Bootstrap Consul ACL system
+  ansible.builtin.include_tasks:
+    file: 'bootstrap_acl.yml'

@@ -1,0 +1,65 @@
+---
+- name: Set Consul binary capabilities (Debian)
+  ansible.builtin.capabilities:
+    path: "{{ consul_install_dir }}/consul"
+    capability: "cap_net_bind_service=+ep"
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Set Consul master node
+  ansible.builtin.set_fact:
+    is_consul_master_node: true
+  when: inventory_hostname == groups['consul_master'][0]
+
+- name: Generate Consul encryption key
+  ansible.builtin.command: "consul keygen"
+  register: consul_encryption_key
+  when:
+    - is_consul_master_node | default(false)
+    - consul_encrypt_key == ""
+
+- name: Set Consul encryption key fact
+  ansible.builtin.set_fact:
+    consul_encrypt_key: "{{ consul_encryption_key.stdout }}"
+  when:
+    - is_consul_master_node | default(false)
+    - consul_encryption_key is changed
+
+- name: Share encryption key with other nodes
+  set_fact:
+    consul_encrypt_key: "{{ hostvars[groups['consul_master'][0]]['consul_encrypt_key'] }}"
+  when: not is_consul_master_node | default(false)
+
+- name: Generate Consul configuration
+  ansible.builtin.template:
+    src: consul_config.hcl.j2
+    dest: "{{ consul_config_file }}"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: 0640
+
+- name: Generate Consul systemd service
+  ansible.builtin.template:
+    src: consul.service.j2
+    dest: /etc/systemd/system/consul.service
+    mode: 0644
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start Consul service
+  ansible.builtin.systemd:
+    name: consul
+    state: restarted
+    enabled: yes
+
+- name: Wait for Consul service to be active
+  ansible.builtin.uri:
+    method: GET
+    url: "http://{{ consul_advertise_addr }}:{{ consul_http_port }}/v1/status/leader"
+    timeout: 10
+  register: consul_http_check
+  until: consul_http_check.status == 200
+  retries: 30
+  delay: 10

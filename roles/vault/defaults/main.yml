@@ -25,9 +25,9 @@ vault_backend: "raft"  # options: raft, consul, s3, etc.
 vault_api_port: 8200
 vault_cluster_port: 8201
 vault_tls_enabled: true
-#vault_url_scheme: "https" # use Jinja templating instead static
-vault_api_addr: ""         # automatically set on configure task
-vault_cluster_addr: ""     # automatically set on configure task
+# vault_url_scheme: "https" # use Jinja templating instead static
+# vault_api_addr: ""         # automatically set on configure task
+# vault_cluster_addr: ""     # automatically set on configure task
 vault_ui: true
 
 # TLS configuration
@@ -47,4 +47,4 @@ vault_log_format: "json"
 
 # Raft configuration (only for cluster mode)
 vault_raft_node_id: "{{ inventory_hostname }}"
-#vault_raft_peers: [] # use inventory hosts instead
+# vault_raft_peers: [] # use inventory hosts instead

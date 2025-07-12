@@ -2,10 +2,38 @@
 - hosts: kubernetes
   become: yes
   #vars:
-  # vars_prompt:
-  #   - name: teleport_version
-  #     prompt: "Enter the Teleport version"
-  #     private: no
-  #     default: "v17.5.2"
+  vars_prompt:
+    - name: kubernetes_version
+      prompt: "Enter the Kubernetes version"
+      private: no
+      default: "1.32.0"
+    - name: kubernetes_cluster_name
+      prompt: "Enter the Kubernetes cluster name"
+      private: no
+      default: "kubernetes-cluster"
+    - name: container_runtime
+      prompt: "Enter the container runtime (containerd, docker, cri-o)"
+      private: no
+      default: "containerd"
+    - name: container_runtime_version
+      prompt: "Enter the container runtime version"
+      private: no
+      default: "2.1.1"
+    - name: cni_plugin
+      prompt: "Enter the CNI plugin (calico, cilium, flannel)"
+      private: no
+      default: "calico"
+    - name: cni_version
+      prompt: "Enter the CNI plugin version"
+      private: no
+      default: "v3.30.2"
+    - name: kubernetes_pod_network_cidr
+      prompt: "Enter the Kubernetes pod network CIDR"
+      private: no
+      default: "192.168.0.0/16"
+    - name: kubernetes_svc_network_cidr
+      prompt: "Enter the Kubernetes service network CIDR"
+      private: no
+      default: "10.96.0.0/12"
   roles:
     - role: ../roles/kubernetes

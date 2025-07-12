@@ -1,0 +1,28 @@
+---
+- name: Install system dependencies
+  ansible.builtin.include_tasks:
+    file: 'system_setup.yml'
+
+- name: Install container runtime
+  ansible.builtin.include_tasks:
+    file: 'container_runtime.yml'
+
+- name: Install Kubernetes
+  ansible.builtin.include_tasks:
+    file: 'kubernetes_install.yml'
+
+- name: Initialize Kubernetes control plane
+  ansible.builtin.include_tasks:
+    file: 'control_plane_init.yml'
+
+- name: Set up CNI plugin
+  ansible.builtin.include_tasks:
+    file: 'cni_setup.yml'
+
+- name: Join worker nodes to Kubernetes cluster
+  ansible.builtin.include_tasks:
+    file: 'worker_join.yml'
+
+- name: Display Kubernetes cluster information
+  ansible.builtin.include_tasks:
+    file: 'post_install.yml'

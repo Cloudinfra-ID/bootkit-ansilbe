@@ -1,0 +1,13 @@
+---
+- name: Copy join command from control plane
+  copy:
+    src: /tmp/join-command.sh
+    dest: /tmp/join-command.sh
+    mode: '0755'
+  when: not is_kubernetes_master_node | default(false)
+
+- name: Join worker node to cluster
+  shell: bash /tmp/join-command.sh
+  args:
+    creates: /etc/kubernetes/kubelet.conf
+  when: not is_kubernetes_master_node | default(false)

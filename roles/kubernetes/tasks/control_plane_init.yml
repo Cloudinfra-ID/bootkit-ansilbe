@@ -1,0 +1,72 @@
+---
+- name: Create Kubernetes directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ kubernetes_config_dir }}"
+    - "{{ kubernetes_ssl_dir }}"
+    - "{{ kubernetes_data_dir }}"
+    - "{{ kubernetes_manifests_dir }}"
+
+- name: Set kubernetes_api_endpoint to first master node IP
+  set_fact:
+    kubernetes_api_endpoint: "{{ hostvars[groups['kubernetes_master'][0]]['ansible_host'] + ':' + (kubernetes_api_server_port | string) }}"
+  when: kubernetes_api_endpoint is not defined or kubernetes_api_endpoint == ""
+
+- name: Set Kubernetes master node
+  set_fact:
+    is_kubernetes_master_node: true
+  when: inventory_hostname == groups['kubernetes_master'][0] # Set first master node as the control plane
+
+- name: Initialize Kubernetes cluster (only on first master node)
+  shell: |
+    kubeadm init \
+      --control-plane-endpoint="{{ kubernetes_api_endpoint }}" \
+      --kubernetes-version="v{{ kubernetes_version }}" \
+      --pod-network-cidr={{ kubernetes_pod_network_cidr }} \
+      --service-cidr={{ kubernetes_svc_network_cidr }} \
+      --upload-certs
+  args:
+    creates: "{{kubernetes_admin_config_file }}"
+  when: is_kubernetes_master_node | default(false)
+  register: kubeadm_init_result
+
+- name: Create .kube directory for root
+  file:
+    path: /root/.kube
+    state: directory
+    mode: '0755'
+  when: kubeadm_init_result is defined and kubeadm_init_result.changed
+
+- name: Copy admin.conf to root user kube config
+  copy:
+    src: "{{ kubernetes_admin_config_file }}"
+    dest: /root/.kube/config
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0644'
+  when: kubeadm_init_result is defined and kubeadm_init_result.changed
+
+- name: Generate join command for worker nodes
+  shell: kubeadm token create --print-join-command
+  register: join_command
+  when: kubeadm_init_result is defined and kubeadm_init_result.changed
+
+- name: Save join command to file
+  copy:
+    content: "{{ join_command.stdout }}"
+    dest: "{{ kubernetes_join_command_file }}"
+    mode: '0755'
+  when: kubeadm_init_result is defined and kubeadm_init_result.changed
+
+- name: Fetch join command to local machine
+  fetch:
+    src: "{{ kubernetes_join_command_file }}"
+    dest: /tmp/join-command.sh
+    flat: yes
+  when: is_kubernetes_master_node | default(false)

@@ -1,0 +1,93 @@
+---
+- name: Create container runtime group
+  ansible.builtin.group:
+    name: "{{ container_runtime_group }}"
+    system: true
+    state: present
+
+- name: Create container runtime system user
+  ansible.builtin.user:
+    name: "{{ container_runtime_user }}"
+    group: "{{ container_runtime_group }}"
+    system: true
+    shell: /bin/false
+    create_home: yes
+    home: "{{ container_runtime_data_dir }}"
+    state: present
+
+- name: Create container runtime directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ container_runtime_user }}"
+    group: "{{ container_runtime_user }}"
+    mode: '0755'
+  loop:
+    - "{{ container_runtime_config_dir }}"
+    - "{{ container_runtime_data_dir }}"
+    - "{{ container_runtime_opt_dir }}"
+
+- name: Download container runtime binary
+  ansible.builtin.get_url:
+      url: "{{ container_runtime_download_url }}"
+      dest: "/tmp/container-runtime.tar.gz"
+      mode: '0644'
+      timeout: 300
+
+- name: Extract container runtime binary
+  ansible.builtin.unarchive:
+    src: "/tmp/container-runtime.tar.gz"
+    dest: "/usr/local"
+    remote_src: true
+    owner: "root"
+    group: "root"
+    mode: '0755'
+
+- name: Generate container runtime configuration
+  shell: containerd config default > {{ container_runtime_config_file }}
+  args:
+    creates: "{{ container_runtime_config_file }}"
+
+- name: Set proper permissions for container runtime configuration
+  ansible.builtin.file:
+    path: "{{ container_runtime_config_file }}"
+    owner: "{{ container_runtime_user }}"
+    group: "{{ container_runtime_group }}"
+    mode: '0644'
+
+- name: Generate container runtime systemd service file
+  ansible.builtin.template:
+    src: "{{ container_runtime }}.service.j2"
+    dest: "/etc/systemd/system/{{ container_runtime }}.service"
+    owner: "root"
+    group: "root"
+    mode: '0644'
+
+- name: Reload systemd to recognize new service
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start container runtime service
+  ansible.builtin.systemd:
+    name: "{{ container_runtime }}"
+    state: started
+    enabled: true
+
+# - name: Wait for container runtime port to be available
+#   ansible.builtin.wait_for:
+#     host: "127.0.0.1"
+#     port: 8080
+#     delay: 10
+#     timeout: 60
+#     state: started
+#     msg: "Container runtime service is not available after waiting for 60 seconds."
+
+- name: Verify container runtime installation
+  ansible.builtin.command:
+    cmd: "{{ container_runtime }} --version"
+  register: container_runtime_version_output
+  changed_when: false
+
+- name: Display container runtime version
+  ansible.builtin.debug:
+    msg: "{{ container_runtime_version_output.stdout }}"

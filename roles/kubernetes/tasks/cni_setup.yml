@@ -1,0 +1,14 @@
+---
+- name: Apply CNI operator manifest
+  shell: kubectl apply -f "{{ cni_operator_manifest_url }}"
+  environment:
+    KUBECONFIG: "{{ kubernetes_admin_config_file }}"
+  when: control_plane_init_result is defined and control_plane_init_result.changed
+  # when: inventory_hostname == groups['kubernetes_master'][0]
+
+- name: Apply CNI custom resources
+  shell: kubectl apply -f "{{ cni_manifest_url }}"
+  environment:
+    KUBECONFIG: "{{ kubernetes_admin_config_file }}"
+  when: control_plane_init_result is defined and control_plane_init_result.changed
+  # when: inventory_hostname == groups['kubernetes_master'][0]

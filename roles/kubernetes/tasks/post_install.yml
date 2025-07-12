@@ -1,0 +1,26 @@
+---
+- name: Wait for all nodes to be ready
+  shell: kubectl get nodes --no-headers | grep -v Ready | wc -l
+  register: not_ready_nodes
+  until: not_ready_nodes.stdout == "0"
+  retries: 30
+  delay: 10
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: is_kubernetes_master_node | default(false)
+
+- name: Display Kubernetes cluster information
+  debug:
+    msg: |
+      Kubernetes cluster {{ kubernetes_cluster_name }} has been successfully deployed!
+      
+      Control Plane: {{ kubernetes_api_endpoint }}
+      Pod Network: {{ kubernetes_pod_network_cidr }}
+      Service Network: {{ kubernetes_svc_network_cidr }}
+      
+      To access the cluster from your local machine:
+      1. Copy {{ kubernetes_admin_config_file }} from the control plane
+      2. Set KUBECONFIG environment variable or copy to ~/.kube/config
+      
+      Verify cluster status with: kubectl get nodes -o wide
+  when: is_kubernetes_master_node | default(false)

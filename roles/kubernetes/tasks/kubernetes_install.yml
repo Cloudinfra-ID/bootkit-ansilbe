@@ -1,0 +1,29 @@
+---
+- name: Add Kubernetes GPG key
+  apt_key:
+    url: https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version.split('.')[0] }}.{{ kubernetes_version.split('.')[1] }}/deb/Release.key
+    state: present
+
+- name: Add Kubernetes repository
+  apt_repository:
+    repo: "deb https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version.split('.')[0] }}.{{ kubernetes_version.split('.')[1] }}/deb/ /"
+    state: present
+
+- name: Install Kubernetes packages
+  ansible.builtin.package:
+    name: "{{ item }}={{ kubernetes_version }}-1.1"
+    state: present
+    update_cache: yes
+  loop: "{{ kubernetes_packages }}"
+
+- name: Mark hold Kubernetes packages
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop: "{{ kubernetes_packages }}"
+
+# - name: Enable and start kubelet
+#   systemd:
+#     name: kubelet
+#     enabled: yes
+#     state: started

@@ -1,0 +1,64 @@
+# System setup
+# Kernel modules
+kernel_modules:
+  - overlay
+  - br_netfilter
+# Sysctl parameters
+sysctl_params:
+  net.bridge.bridge-nf-call-iptables: 1
+  net.bridge.bridge-nf-call-ip6tables: 1
+  net.ipv4.ip_forward: 1
+
+# Kubernetes
+kubernetes_version: "1.32.0"
+kubernetes_arch: "amd64"
+
+# Kubernetes directories
+kubernetes_config_dir: "/etc/kubernetes"
+kubernetes_ssl_dir: "/etc/kubernetes/ssl"
+kubernetes_data_dir: "/var/lib/kubelet"
+kubernetes_manifests_dir: "/etc/kubernetes/manifests"
+
+# Kubernetes packages
+kubernetes_packages:
+  - kubelet
+  - kubeadm
+  - kubectl
+
+# Kubernetes allowed ports
+kubernetes_allowed_ports:
+  - "6443"        # Kubernetes API server
+  - "2379:2380"   # etcd server client API
+  - "10250"       # Kubelet API
+  - "10259"       # kube-scheduler
+  - "10257"       # kube-controller-manager
+  - "30000:32767" # NodePort Services (correct syntax)
+
+# Kubernetes cluster configuration
+kubernetes_cluster_name: "kubernetes-cluster"
+kubernetes_api_server_port: 6443
+kubernetes_api_endpoint: "" # Use first master node IP if not set
+kubernetes_pod_network_cidr: "192.168.0.0/16"
+kubernetes_svc_network_cidr: "10.96.0.0/12"
+kubernetes_config_file: "{{ kubernetes_config_dir }}/kubeadm-config.yml"
+kubernetes_admin_config_file: "{{ kubernetes_config_dir }}/admin.conf"
+kubernetes_join_command_file: "{{ kubernetes_config_dir }}/join-command.sh"
+
+# Container Runtime
+container_runtime: "containerd"  # options: docker, containerd, cri-o
+container_runtime_version: "2.1.1"
+container_runtime_arch: "amd64"
+container_runtime_config_dir: "/etc/containerd"
+container_runtime_config_file: "{{ container_runtime_config_dir }}/config.toml"
+container_runtime_data_dir: "/var/lib/containerd"
+container_runtime_opt_dir: "/opt/containerd"
+container_runtime_download_url: "https://github.com/containerd/containerd/releases/download/v{{ container_runtime_version }}/containerd-{{ container_runtime_version }}-linux-{{ container_runtime_arch }}.tar.gz"
+container_runtime_user: "containerd"
+container_runtime_group: "containerd"
+
+# CNI (Container Network Interface)
+cni_plugin: "calico"  # options: cilium, calico, flannel, etc.
+cni_version: "v3.30.2"
+cni_arch: "amd64"
+cni_operator_manifest_url: "https://raw.githubusercontent.com/projectcalico/calico/{{ cni_version }}/manifests/tigera-operator.yaml"
+cni_manifest_url: "https://raw.githubusercontent.com/projectcalico/calico/{{ cni_version }}/manifests/custom-resources.yaml"

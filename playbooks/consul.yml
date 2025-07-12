@@ -1,5 +1,22 @@
 ---
 - hosts: consul
   become: yes
+  vars_prompt:
+    - name: consul_version
+      prompt: "Enter the Consul version"
+      private: no
+      default: "1.21.2"
+    - name: consul_cluster_name
+      prompt: "Enter the Consul cluster name"
+      private: no
+      default: "consul-cluster"
+    - name: consul_datacenter
+      prompt: "Enter the Consul datacenter"
+      private: no
+      default: "dc1"
+    - name: consul_encrypt_key
+      prompt: "Enter the Consul encryption key (leave empty to generate)"
+      private: no
+      default: ""
   roles:
     - role: ../roles/consul

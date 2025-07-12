@@ -1,0 +1,113 @@
+server_name = "{{ consul_node_name }}"
+datacenter = "{{ consul_datacenter }}"
+data_dir = "{{ consul_data_dir }}"
+node_name = "{{ consul_node_name }}"
+server = {{ consul_server | lower }}
+bootstrap_expect = {{ groups['consul'] | length }}
+
+# Network configuration
+advertise_addr = "{{ consul_advertise_addr }}"
+bind_addr = "{{ consul_bind_address }}"
+client_addr = "{{ consul_client_address }}"
+retry_join = {{ consul_retry_join | to_json }}
+
+# Encryption
+encrypt = "{{ consul_encrypt_key }}"
+
+# ACL configuration
+acl = {
+  enabled = {{ consul_acl_enabled | lower }}
+  default_policy = "{{ consul_acl_default_policy }}"
+  enable_token_persistence = true
+}
+
+# UI configuration
+ui_config {
+  enabled = {{ consul_ui_enabled | lower }}
+  # content_security_policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+}
+
+# Connect configuration
+connect {
+  enabled = {{ consul_connect_enabled | lower }}
+}
+
+# Performance and reliability
+performance {
+  raft_multiplier = {{ consul_performance_raft_multiplier }}
+  leave_drain_time = "5s"
+  rpc_hold_timeout = "7s"
+}
+
+# Logging
+log_file = "{{ consul_log_dir }}/consul.log"
+log_level = "{{ consul_log_level }}"
+log_json = {{ consul_log_json | lower }}
+enable_syslog = true
+syslog_facility = "LOCAL0"
+log_rotate_duration = "24h"
+log_rotate_max_files = 7
+
+{% if consul_tls_enabled %}
+# TLS configuration
+tls {
+  defaults {
+    verify_incoming = true
+    verify_outgoing = true
+    verify_server_hostname = {{ consul_tls_verify_server_hostname | lower }}
+    ca_file = "{{ consul_tls_ca_file }}"
+    cert_file = "{{ consul_tls_cert_file }}"
+    key_file = "{{ consul_tls_key_file }}"
+  }
+  internal_rpc {
+    verify_incoming = true
+    verify_server_hostname = true
+  }
+}
+{% endif %}
+
+# DNS configuration
+dns_config {
+  allow_stale = true
+  max_stale = "87600h"
+  node_ttl = "30s"
+  service_ttl {
+    "*" = "30s"
+  }
+}
+
+# Ports configuration
+ports {
+  grpc = {{ consul_grpc_port }}
+  grpc_tls = {{ consul_grpc_tls_port }}
+  http = {{ consul_http_port }}
+  dns = {{ consul_dns_port }}
+{% if consul_tls_enabled %}
+  https = {{ consul_https_port }}
+{% endif %}
+}
+
+# Limits configuration
+limits {
+  http_max_conns_per_client = 200
+  https_handshake_timeout = "5s"
+  rpc_max_conns_per_client = 100
+  rpc_rate = 100
+  rpc_max_burst = 1000
+  kv_max_value_size = 1048576
+}
+
+# Monitoring configuration
+telemetry {
+  prometheus_retention_time = "30s"
+  disable_hostname = true
+  metrics_prefix = "consul"
+}
+
+# Health check configuration
+check_update_interval = "5m"
+discard_check_output = true  # Prevents memory bloat
+
+# Raft configuration
+raft_snapshot_threshold = 16384
+raft_snapshot_interval = "30s"

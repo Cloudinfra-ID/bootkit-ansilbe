@@ -1,0 +1,11 @@
+---
+- name: Check Vault health status
+  ansible.builtin.command: vault status -format=json
+  register: vault_status
+  environment:
+    VAULT_ADDR: "{{ vault_api_addr }}"
+
+- name: Show Vault health status
+  ansible.builtin.debug:
+    msg: "Vault is healthy: {{ vault_status.stdout | from_json }}"
+  when: vault_status.rc == 0

@@ -1,0 +1,11 @@
+---
+- hosts: kubernetes
+  become: yes
+  #vars:
+  # vars_prompt:
+  #   - name: teleport_version
+  #     prompt: "Enter the Teleport version"
+  #     private: no
+  #     default: "v17.5.2"
+  roles:
+    - role: ../roles/kubernetes

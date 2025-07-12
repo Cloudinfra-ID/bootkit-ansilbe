@@ -1,0 +1,5 @@
+---
+- hosts: consul
+  become: yes
+  roles:
+    - role: ../roles/consul

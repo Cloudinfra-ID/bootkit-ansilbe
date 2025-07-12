@@ -9,7 +9,7 @@
     executable: /bin/bash
   register: unseal_master_result
   when:
-    - inventory_hostname == groups['vault'][0]
+    - is_vault_master_node
 
 - name: Fetch unseal JSON file from Master node
   fetch:
@@ -17,15 +17,14 @@
     dest: /tmp/unseal.json
     flat: true
   when:
-    - inventory_hostname == groups['vault'][0]
+    - is_vault_master_node
 
 - name: Copy unseal JSON file to Slave nodes
   copy:
     src: /tmp/unseal.json
     dest: "{{ vault_config_dir }}/unseal.json"
-  register: copy_unseal_result
   when:
-    - inventory_hostname != groups['vault'][0]
+    - not is_vault_master_node
 
 - name: Unseal Vault with unseal JSON file in Slave nodes
   shell: |
@@ -36,12 +35,11 @@
     VAULT_ADDR: "{{ vault_api_addr }}"
   args:
     executable: /bin/bash
-  register: unseal_slave_result
   when:
-    - copy_unseal_result is changed
+    - not is_vault_master_node
 
 - name: Remove unseal JSON file in Slave nodes
   ansible.builtin.file:
     path: "{{ vault_config_dir }}/unseal.json"
     state: absent
-  when: unseal_slave_result is changed
+  when: not is_vault_master_node

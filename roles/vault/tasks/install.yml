@@ -1,13 +1,4 @@
 ---
-- name: Install dependencies (RedHat)
-  ansible.builtin.package:
-    name:
-      - unzip
-      - gnupg
-      - openssl
-    state: present
-  when: ansible_os_family == 'RedHat'
-
 - name: Install dependencies (Debian)
   ansible.builtin.package:
     name:

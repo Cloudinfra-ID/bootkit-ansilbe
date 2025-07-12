@@ -2,14 +2,22 @@
 - name: Install Vault
   ansible.builtin.include_tasks:
     file: 'install.yml'
+
 - name: Configure Vault
   ansible.builtin.include_tasks:
     file: 'configure.yml'
+
 - name: Initialize Vault operator
   ansible.builtin.include_tasks:
     file: 'initialize_operator.yml'
-  when: vault_auto_init_operator | default(false)
+  when: vault_auto_init_operator
+
 - name: Unseal Vault operator
   ansible.builtin.include_tasks:
     file: 'unseal.yml'
-  when: vault_auto_init_operator | default(false)
+  when: vault_auto_init_operator
+
+- name: Health check Vault
+  ansible.builtin.include_tasks:
+    file: 'health_check.yml'
+  when: vault_auto_init_operator

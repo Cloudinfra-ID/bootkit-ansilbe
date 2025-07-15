@@ -36,7 +36,7 @@ elasticsearch_heap_size: "768M"
 # Elasticsearch security settings
 elasticsearch_xpack_security_enabled: true
 elasticsearch_xpack_security_enrollment_enabled: true
-elasticsearch_superuser_password: "12345678"
+# elasticsearch_superuser_password: "12345678"
 
 # Eelasticsearch TLS settings
 elasticsearch_ssl_enabled: true  # Set to true for production with HTTPS
@@ -49,17 +49,6 @@ elasticsearch_http_ssl_ca: "{{ elasticsearch_ssl_ca_file }}"
 elasticsearch_transport_ssl_certificate: "{{ elasticsearch_ssl_cert_file }}"
 elasticsearch_transport_ssl_key: "{{ elasticsearch_ssl_key_file }}"
 elasticsearch_transport_ssl_ca: "{{ elasticsearch_ssl_ca_file }}"
-# PCKS12
-elasticsearch_ssl_ca_password: "changeme"  # Used by the certutil command to create the PKCS12 keystore
-elasticsearch_ssl_cert_password: "changeme"  # Used by the certutil command to create the PKCS12 keystore
-elasticsearch_http_ssl_enabled: true  # Set to true for production with HTTPS
-elasticsearch_http_ssl_keystore_path: "{{ elasticsearch_ssl_cert_file}}"
-elasticsearch_http_ssl_truststore_path: "{{ elasticsearch_ssl_cert_file}}"
-elasticsearch_transport_ssl_enabled: true
-elasticsearch_transport_ssl_keystore_path: "{{ elasticsearch_ssl_cert_file}}"
-elasticsearch_transport_ssl_truststore_path: "{{ elasticsearch_ssl_cert_file}}"
-elasticsearch_ssl_instance_config: "{{ elasticsearch_config_dir }}/certs/instances.yml"
-elasticsearch_ssl_sans_dns: [] # add more dns here
 
 # Elasticsearch keystore
 elasticsearch_keystore_path: "{{ elasticsearch_config_dir }}/elasticsearch.keystore"

@@ -1,0 +1,65 @@
+# Elasticsearch
+elasticsearch_version: "8.18.3"
+elasticsearch_arch: "x86_64"
+
+# Elasticsearch download and installation
+# elasticsearch_download_url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ elasticsearch_version }}-linux-{{ elasticsearch_arch }}.tar.gz"
+elasticsearch_download_url: "http://172.17.0.1:8080/elasticsearch-{{ elasticsearch_version }}-linux-{{ elasticsearch_arch }}.tar.gz"
+
+# Elasticearch directories
+elasticsearch_home_dir: "/opt/elasticsearch"
+elasticsearch_config_dir: "/etc/elasticsearch"
+elasticsearch_ssl_dir: "{{ elasticsearch_home_dir }}/config/certs"
+elasticsearch_data_dir: "/var/lib/elasticsearch"
+elasticsearch_log_dir: "/var/log/elasticsearch"
+
+# Elasticsearch user and group
+elasticsearch_user: "elasticsearch"
+elasticsearch_group: "elasticsearch"
+
+# Elasticsearch ports
+elasticsearch_http_port: 9200
+elasticsearch_transport_port: 9300
+
+# Elasticsearch cluster settings
+elasticsearch_cluster_name: "elasticsearch-cluster"
+elasticsearch_network_host: "{{ ansible_host }}"
+elasticsearch_node_name: "{{ inventory_hostname }}"
+elasticsearch_node_roles: ["master", "data", "ingest"]
+
+# Elasticsearch configuration
+elasticsearch_config_file: "{{ elasticsearch_config_dir }}/elasticsearch.yml"
+
+# Elasticsearch Java options
+elasticsearch_heap_size: "768M"
+
+# Elasticsearch security settings
+elasticsearch_xpack_security_enabled: true
+elasticsearch_xpack_security_enrollment_enabled: true
+elasticsearch_superuser_password: "12345678"
+
+# Eelasticsearch TLS settings
+elasticsearch_ssl_enabled: true  # Set to true for production with HTTPS
+elasticsearch_ssl_ca_file: "{{ elasticsearch_config_dir }}/certs/elasticsearch-ca.crt"
+elasticsearch_ssl_cert_file: "{{ elasticsearch_config_dir }}/certs/elasticsearch.crt"
+elasticsearch_ssl_key_file: "{{ elasticsearch_config_dir }}/certs/elasticsearch.key"
+elasticsearch_http_ssl_certificate: "{{ elasticsearch_ssl_cert_file }}"
+elasticsearch_http_ssl_key: "{{ elasticsearch_ssl_key_file }}"
+elasticsearch_http_ssl_ca: "{{ elasticsearch_ssl_ca_file }}"
+elasticsearch_transport_ssl_certificate: "{{ elasticsearch_ssl_cert_file }}"
+elasticsearch_transport_ssl_key: "{{ elasticsearch_ssl_key_file }}"
+elasticsearch_transport_ssl_ca: "{{ elasticsearch_ssl_ca_file }}"
+# PCKS12
+elasticsearch_ssl_ca_password: "changeme"  # Used by the certutil command to create the PKCS12 keystore
+elasticsearch_ssl_cert_password: "changeme"  # Used by the certutil command to create the PKCS12 keystore
+elasticsearch_http_ssl_enabled: true  # Set to true for production with HTTPS
+elasticsearch_http_ssl_keystore_path: "{{ elasticsearch_ssl_cert_file}}"
+elasticsearch_http_ssl_truststore_path: "{{ elasticsearch_ssl_cert_file}}"
+elasticsearch_transport_ssl_enabled: true
+elasticsearch_transport_ssl_keystore_path: "{{ elasticsearch_ssl_cert_file}}"
+elasticsearch_transport_ssl_truststore_path: "{{ elasticsearch_ssl_cert_file}}"
+elasticsearch_ssl_instance_config: "{{ elasticsearch_config_dir }}/certs/instances.yml"
+elasticsearch_ssl_sans_dns: [] # add more dns here
+
+# Elasticsearch keystore
+elasticsearch_keystore_path: "{{ elasticsearch_config_dir }}/elasticsearch.keystore"

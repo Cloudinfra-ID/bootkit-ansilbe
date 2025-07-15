@@ -1,0 +1,52 @@
+cluster.name: {{ elasticsearch_cluster_name }}
+node.name: {{ elasticsearch_node_name }}
+node.roles: {{ elasticsearch_node_roles | to_json }}
+
+path.data: {{ elasticsearch_data_dir }}
+path.logs: {{ elasticsearch_log_dir }}
+
+network.host: {{ elasticsearch_network_host }}
+http.port: {{ elasticsearch_http_port }}
+transport.port: {{ elasticsearch_transport_port }}
+
+discovery.seed_hosts:
+{% for host in groups['elasticsearch'] %}
+  - {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+
+cluster.initial_master_nodes:
+{% for host in groups['elasticsearch'] %}
+  - {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+
+# Security settings
+xpack.security.enabled: {{ elasticsearch_xpack_security_enabled | lower }}
+xpack.security.enrollment.enabled: {{ elasticsearch_xpack_security_enrollment_enabled | lower }}
+
+# SSL/TLS settings for production
+xpack.security.http.ssl:
+  enabled: {{ elasticsearch_ssl_enabled | lower }}
+  certificate: {{ elasticsearch_http_ssl_certificate }}
+  key: {{ elasticsearch_http_ssl_key }}
+  certificate_authorities: {{ elasticsearch_http_ssl_ca }}
+  # keystore.path: {{ elasticsearch_http_ssl_keystore_path }}
+  # truststore.path: {{ elasticsearch_http_ssl_truststore_path }}
+
+xpack.security.transport.ssl:
+  enabled: {{ elasticsearch_ssl_enabled | lower }}
+  certificate: {{ elasticsearch_transport_ssl_certificate }}
+  key: {{ elasticsearch_transport_ssl_key }}
+  certificate_authorities: {{ elasticsearch_transport_ssl_ca }}
+  # verification_mode: certificate
+  # keystore.path: {{ elasticsearch_transport_ssl_keystore_path }}
+  # truststore.path: {{ elasticsearch_transport_ssl_truststore_path }}
+
+# Performance settings
+bootstrap.memory_lock: true
+indices.query.bool.max_clause_count: 10000
+
+# Monitoring
+xpack.monitoring.collection.enabled: true
+
+# Action settings
+action.destructive_requires_name: true

@@ -1,28 +1,28 @@
 ---
-# - name: Install dependencies (Debian)
-#   ansible.builtin.package:
-#     name:
-#       - ca-certificates
-#       - curl
-#       - wget
-#       - tar
-#       - gzip
-#     state: present
-#   when: ansible_os_family == 'Debian'
+- name: Install dependencies (Debian)
+  ansible.builtin.package:
+    name:
+      - ca-certificates
+      - curl
+      - wget
+      - tar
+      - gzip
+    state: present
+  when: ansible_os_family == 'Debian'
 
-# - name: Create  group
-#   ansible.builtin.group:
-#     name: "{{ elasticsearch_group }}"
-#     state: present
-#     system: yes
+- name: Create  group
+  ansible.builtin.group:
+    name: "{{ elasticsearch_group }}"
+    state: present
+    system: yes
 
-# - name: Create Elasticsearch user
-#   ansible.builtin.user:
-#     name: "{{ elasticsearch_user }}"
-#     group: "{{ elasticsearch_group }}"
-#     system: yes
-#     shell: /sbin/false
-#     home: "{{ elasticsearch_home_dir }}"
+- name: Create Elasticsearch user
+  ansible.builtin.user:
+    name: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    system: yes
+    shell: /sbin/false
+    home: "{{ elasticsearch_home_dir }}"
 
 - name: Create Elasticsearch directories
   ansible.builtin.file:
@@ -38,37 +38,36 @@
     - "{{ elasticsearch_data_dir }}"
     - "{{ elasticsearch_log_dir }}"
 
+- name: Download Elasticsearch
+  ansible.builtin.get_url:
+    url: "{{ elasticsearch_download_url }}"
+    dest: "/root/elasticsearch.tar.gz"
 
-# - name: Download Elasticsearch
-#   ansible.builtin.get_url:
-#     url: "{{ elasticsearch_download_url }}"
-#     dest: "/root/elasticsearch.tar.gz"
+- name: Unarchive Elasticsearch
+  ansible.builtin.unarchive:
+    src: "/root/elasticsearch.tar.gz"
+    dest: "{{ elasticsearch_home_dir }}"
+    remote_src: yes
+    mode: 0755
+    extra_opts:
+      - --strip-components=1
 
-# - name: Unarchive Elasticsearch
-#   ansible.builtin.unarchive:
-#     src: "/root/elasticsearch.tar.gz"
-#     dest: "{{ elasticsearch_home_dir }}"
-#     remote_src: yes
-#     mode: 0755
-#     extra_opts:
-#       - --strip-components=1
+- name: Set ownership for Elasticsearch directories
+  ansible.builtin.file:
+    path: "{{ elasticsearch_home_dir }}"
+    state: directory
+    owner: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    recurse: yes
 
-# - name: Set ownership for Elasticsearch directories
-#   ansible.builtin.file:
-#     path: "{{ elasticsearch_home_dir }}"
-#     state: directory
-#     owner: "{{ elasticsearch_user }}"
-#     group: "{{ elasticsearch_group }}"
-#     recurse: yes
-
-# - name: Create symlink for elasticsearch config directory
-#   file:
-#     src: "{{ elasticsearch_home_dir }}/config"
-#     dest: "{{ elasticsearch_config_dir }}"
-#     owner: elasticsearch
-#     group: elasticsearch
-#     state: link
-#     force: yes
+- name: Create symlink for elasticsearch config directory
+  file:
+    src: "{{ elasticsearch_home_dir }}/config"
+    dest: "{{ elasticsearch_config_dir }}"
+    owner: elasticsearch
+    group: elasticsearch
+    state: link
+    force: yes
 
 - name: Create Elasticsearch systemd service file
   ansible.builtin.template:

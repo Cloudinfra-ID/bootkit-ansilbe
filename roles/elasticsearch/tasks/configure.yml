@@ -1,0 +1,36 @@
+---
+- name: Set vm.max_map_count for Elasticsearch
+  sysctl:
+    name: vm.max_map_count
+    value: '262144'
+    state: present
+    reload: yes
+
+- name: Configure Elasticsearch limits
+  lineinfile:
+    path: /etc/security/limits.conf
+    line: "{{ item }}"
+    create: yes
+  loop:
+    - "elasticsearch soft nofile 65536"
+    - "elasticsearch hard nofile 65536"
+    - "elasticsearch soft nproc 4096"
+    - "elasticsearch hard nproc 4096"
+    - "elasticsearch soft memlock unlimited"
+    - "elasticsearch hard memlock unlimited"
+
+- name: Configure Elasticsearch main config
+  template:
+    src: elasticsearch_config.yml.j2
+    dest: "{{ elasticsearch_home_dir }}/config/elasticsearch.yml"
+    owner: elasticsearch
+    group: elasticsearch
+    mode: '0660'
+    backup: yes
+
+- name: Restart Elasticsearch service
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

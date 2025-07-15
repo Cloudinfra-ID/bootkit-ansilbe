@@ -1,0 +1,14 @@
+---
+- hosts: elasticsearch
+  become: yes
+  vars_prompt:
+    - name: elasticsearch_version
+      prompt: "Enter the Elasticsearch version"
+      default: "8.18.3"
+      private: no
+    - name: elasticsearch_cluster_name
+      prompt: "Enter the Elasticsearch cluster name"
+      default: "elasticsearch-cluster"
+      private: no
+  roles:
+    - role: ../roles/elasticsearch

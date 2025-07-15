@@ -91,4 +91,17 @@ cfssl gencert \
   -profile=server \
   "$CONFIG_DIR/$CN-csr.json" | cfssljson -bare "$OUT_DIR/$CN"
 
+echo "→ Generating ${CN} CA pkcs12 certificate..."
+openssl pkcs12 -export -out "${OUT_DIR}/${CN}-ca.p12" \
+  -inkey "${OUT_DIR}/ca-key.pem"  \
+  -in "${OUT_DIR}/ca.pem" \
+  -name "${CN}-ca"
+
+echo "→ Generating ${CN} server pkcs12 certificate..."
+openssl pkcs12 -export -out "${OUT_DIR}/${CN}.p12" \
+  -inkey "${OUT_DIR}/${CN}-key.pem"  \
+  -in "${OUT_DIR}/${CN}.pem" \
+  -certfile "${OUT_DIR}/ca.pem" \
+  -name "${CN}"
+
 echo "✅ Certificate, key, and CA files are saved in '$OUT_DIR/'"

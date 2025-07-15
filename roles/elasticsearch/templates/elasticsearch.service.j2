@@ -1,0 +1,21 @@
+[Unit]
+Description=Elasticsearch
+Documentation=https://www.elastic.co
+Wants=network-online.target
+After=network-online.target
+ConditionNetwork=true
+
+[Service]
+User={{ elasticsearch_user }}
+Group={{ elasticsearch_group }}
+ExecStart={{ elasticsearch_home_dir }}/bin/elasticsearch
+Environment=ES_PATH_CONF={{ elasticsearch_config_dir }}
+Environment=ES_HOME={{ elasticsearch_home_dir }}
+Environment=ES_JAVA_OPTS="-Xms{{ elasticsearch_heap_size }} -Xmx{{ elasticsearch_heap_size }}"
+LimitMEMLOCK=infinity
+ExecReload=/bin/kill -HUP $MAINPID
+LimitNOFILE=65536
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
